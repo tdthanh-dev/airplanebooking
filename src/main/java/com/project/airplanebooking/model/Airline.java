@@ -31,7 +31,7 @@ public class Airline extends BaseEntity {
     @Column(name = "icao_code", nullable = false, length = 4)
     private String icaoCode;
 
-    @Column(name = "call_sign", nullable = false, length = 7)
+    @Column(name = "call_sign", nullable = false, length = 20)
     private String callSign;
 
     @Column(name = "country", nullable = false, length = 50)

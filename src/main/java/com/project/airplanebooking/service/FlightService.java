@@ -1,36 +1,34 @@
 package com.project.airplanebooking.service;
 
-import com.project.airplanebooking.dto.request.FlightDTO;
-import com.project.airplanebooking.model.Flight;
-import com.project.airplanebooking.model.Airport;
-import com.project.airplanebooking.model.Airline;
-
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+
+import com.project.airplanebooking.dto.request.FlightDTO;
+import com.project.airplanebooking.model.Flight;
 
 public interface FlightService {
     Flight createFlight(FlightDTO flightDTO);
 
-    Flight updateFlight(Long id, FlightDTO flightDTO);
-
-    void deleteFlight(Long id);
+    List<Flight> getAllFlights();
 
     Flight getFlightById(Long id);
 
     Flight getFlightByFlightNumber(String flightNumber);
 
-    List<Flight> getFlightsByDepartureAirport(Airport departureAirport);
+    List<Flight> searchFlights(String departureAirportCode, String arrivalAirportCode, LocalDate departureDate);
 
-    List<Flight> getFlightsByArrivalAirport(Airport arrivalAirport);
+    List<Flight> getFlightsByAirline(String airlineCode);
 
-    List<Flight> getFlightsByDepartureTimeBetween(LocalDateTime start, LocalDateTime end);
+    Flight updateFlight(Long id, FlightDTO flightDTO);
 
-    List<Flight> getFlightsByAirline(Airline airline);
-
-    List<Flight> searchFlights(Airport departureAirport, Airport arrivalAirport,
-            LocalDateTime departureDate);
-
-    List<Flight> getAllFlights();
+    void deleteFlight(Long id);
 
     void updateFlightStatus(Long id, String status);
+
+    List<Flight> searchFlightsOneWay(String departureAirport, String arrivalAirport, LocalDate departureDate,
+            Integer totalPassengers);
+
+    List<Flight> searchFlightsRoundTrip(String departureAirport, String arrivalAirport, LocalDate departureDate,
+            LocalDate returnDate, Integer totalPassengers);
 }

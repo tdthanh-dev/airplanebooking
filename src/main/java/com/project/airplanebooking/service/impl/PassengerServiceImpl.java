@@ -1,67 +1,80 @@
 package com.project.airplanebooking.service.impl;
 
-import com.project.airplanebooking.dto.request.PassengerDTO;
-import com.project.airplanebooking.model.Passenger;
-import com.project.airplanebooking.model.Booking;
-import com.project.airplanebooking.repository.PassengerRepository;
-import com.project.airplanebooking.repository.BookingRepository;
-import com.project.airplanebooking.service.PassengerService;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import com.project.airplanebooking.dto.request.PassengerDTO;
+import com.project.airplanebooking.model.Booking;
+import com.project.airplanebooking.model.Passenger;
+import com.project.airplanebooking.repository.BookingRepository;
+import com.project.airplanebooking.repository.PassengerRepository;
+import com.project.airplanebooking.service.PassengerService;
 
 @Service
 public class PassengerServiceImpl implements PassengerService {
 
-    private final PassengerRepository passengerRepository;
-    private final BookingRepository bookingRepository;
+    @Autowired
+    private PassengerRepository passengerRepository;
 
-    public PassengerServiceImpl(PassengerRepository passengerRepository, BookingRepository bookingRepository) {
-        this.passengerRepository = passengerRepository;
-        this.bookingRepository = bookingRepository;
-    }
+    @Autowired
+    private BookingRepository bookingRepository;
 
     @Override
     public Passenger createPassenger(PassengerDTO passengerDTO) {
         Passenger passenger = new Passenger();
-        passenger.setFullName(passengerDTO.getFullName());
-        passenger.setPhoneNumber(passengerDTO.getPhoneNumber());
-        passenger.setEmail(passengerDTO.getEmail());
+        passenger.setFirstName(passengerDTO.getFirstName());
+        passenger.setLastName(passengerDTO.getLastName());
+        passenger.setPersonalId(passengerDTO.getPersonalId());
+        passenger.setDateOfBirth(passengerDTO.getBirthDate());
         passenger.setGender(passengerDTO.getGender());
-        passenger.setPassportNumber(passengerDTO.getPassportNumber());
         passenger.setNationality(passengerDTO.getNationality());
-        passenger.setBirthDate(passengerDTO.getBirthDate());
-
-        if (passengerDTO.getBookingId() != null) {
-            Booking booking = bookingRepository.findById(passengerDTO.getBookingId())
-                    .orElseThrow(
-                            () -> new RuntimeException("Booking not found with id: " + passengerDTO.getBookingId()));
-            passenger.setBooking(booking);
-        }
+        passenger.setPassportNumber(passengerDTO.getPassportNumber());
+        passenger.setEmail(passengerDTO.getEmail() != null ? passengerDTO.getEmail() : "");
+        passenger.setPhone(passengerDTO.getPhone() != null ? passengerDTO.getPhone() : "");
 
         return passengerRepository.save(passenger);
     }
 
     @Override
     public Passenger updatePassenger(Long id, PassengerDTO passengerDTO) {
-        Passenger passenger = passengerRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Passenger not found with id: " + id));
+        Passenger passenger = getPassengerById(id);
 
-        passenger.setFullName(passengerDTO.getFullName());
-        passenger.setPhoneNumber(passengerDTO.getPhoneNumber());
-        passenger.setEmail(passengerDTO.getEmail());
-        passenger.setGender(passengerDTO.getGender());
-        passenger.setPassportNumber(passengerDTO.getPassportNumber());
-        passenger.setNationality(passengerDTO.getNationality());
-        passenger.setBirthDate(passengerDTO.getBirthDate());
+        if (passengerDTO.getFirstName() != null) {
+            passenger.setFirstName(passengerDTO.getFirstName());
+        }
 
-        if (passengerDTO.getBookingId() != null) {
-            Booking booking = bookingRepository.findById(passengerDTO.getBookingId())
-                    .orElseThrow(
-                            () -> new RuntimeException("Booking not found with id: " + passengerDTO.getBookingId()));
-            passenger.setBooking(booking);
-        } else {
-            passenger.setBooking(null);
+        if (passengerDTO.getLastName() != null) {
+            passenger.setLastName(passengerDTO.getLastName());
+        }
+
+        if (passengerDTO.getBirthDate() != null) {
+            passenger.setDateOfBirth(passengerDTO.getBirthDate());
+        }
+
+        if (passengerDTO.getGender() != null) {
+            passenger.setGender(passengerDTO.getGender());
+        }
+
+        if (passengerDTO.getNationality() != null) {
+            passenger.setNationality(passengerDTO.getNationality());
+        }
+
+        if (passengerDTO.getPassportNumber() != null) {
+            passenger.setPassportNumber(passengerDTO.getPassportNumber());
+        }
+
+        if (passengerDTO.getPersonalId() != null) {
+            passenger.setPersonalId(passengerDTO.getPersonalId());
+        }
+
+        if (passengerDTO.getEmail() != null) {
+            passenger.setEmail(passengerDTO.getEmail());
+        }
+
+        if (passengerDTO.getPhone() != null) {
+            passenger.setPhone(passengerDTO.getPhone());
         }
 
         return passengerRepository.save(passenger);
@@ -69,16 +82,14 @@ public class PassengerServiceImpl implements PassengerService {
 
     @Override
     public void deletePassenger(Long id) {
-        Passenger passenger = passengerRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Passenger not found with id: " + id));
-
+        Passenger passenger = getPassengerById(id);
         passengerRepository.delete(passenger);
     }
 
     @Override
     public Passenger getPassengerById(Long id) {
         return passengerRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Passenger not found with id: " + id));
+                .orElseThrow(() -> new RuntimeException("Passenger not found"));
     }
 
     @Override
@@ -87,8 +98,15 @@ public class PassengerServiceImpl implements PassengerService {
     }
 
     @Override
+    public List<Passenger> getPassengersByBookingId(Long bookingId) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new RuntimeException("Booking not found"));
+        return passengerRepository.findByBooking(booking);
+    }
+
+    @Override
     public List<Passenger> getPassengersByLastName(String lastName) {
-        return passengerRepository.findByFullNameContaining(lastName);
+        return passengerRepository.findByLastNameContaining(lastName);
     }
 
     @Override

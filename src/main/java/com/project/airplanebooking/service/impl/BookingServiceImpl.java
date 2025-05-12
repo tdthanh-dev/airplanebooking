@@ -1,118 +1,147 @@
 package com.project.airplanebooking.service.impl;
 
-import com.project.airplanebooking.dto.request.BookingDTO;
-import com.project.airplanebooking.dto.request.PassengerDTO;
-import com.project.airplanebooking.model.Booking;
-import com.project.airplanebooking.model.Passenger;
-import com.project.airplanebooking.model.User;
-import com.project.airplanebooking.model.Flight;
-import com.project.airplanebooking.repository.BookingRepository;
-import com.project.airplanebooking.repository.UserRepository;
-import com.project.airplanebooking.repository.FlightRepository;
-import com.project.airplanebooking.service.BookingService;
-import com.project.airplanebooking.service.PassengerService;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import com.project.airplanebooking.dto.request.BookingDTO;
+import com.project.airplanebooking.exception.ResourceNotFoundException;
+import com.project.airplanebooking.model.Booking;
+import com.project.airplanebooking.model.Flight;
+import com.project.airplanebooking.model.Passenger;
+import com.project.airplanebooking.model.User;
+import com.project.airplanebooking.repository.BookingRepository;
+import com.project.airplanebooking.repository.FlightRepository;
+import com.project.airplanebooking.repository.PassengerRepository;
+import com.project.airplanebooking.repository.UserRepository;
+import com.project.airplanebooking.service.BookingService;
 
 @Service
 public class BookingServiceImpl implements BookingService {
 
-    private final BookingRepository bookingRepository;
-    private final UserRepository userRepository;
-    private final FlightRepository flightRepository;
-    private final PassengerService passengerService;
+    @Autowired
+    private BookingRepository bookingRepository;
 
-    public BookingServiceImpl(BookingRepository bookingRepository,
-            UserRepository userRepository,
-            FlightRepository flightRepository,
-            PassengerService passengerService) {
-        this.bookingRepository = bookingRepository;
-        this.userRepository = userRepository;
-        this.flightRepository = flightRepository;
-        this.passengerService = passengerService;
-    }
+    @Autowired
+    private FlightRepository flightRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private PassengerRepository passengerRepository;
 
     @Override
     @Transactional
     public Booking createBooking(BookingDTO bookingDTO) {
-        User user = userRepository.findById(bookingDTO.getUserId())
-                .orElseThrow(() -> new RuntimeException("User not found with id: " + bookingDTO.getUserId()));
-
+        // Lấy thông tin flight
         Flight flight = flightRepository.findById(bookingDTO.getFlightId())
-                .orElseThrow(() -> new RuntimeException("Flight not found with id: " + bookingDTO.getFlightId()));
+                .orElseThrow(
+                        () -> new ResourceNotFoundException("Flight not found with id: " + bookingDTO.getFlightId()));
 
+        // Lấy thông tin user
+        User user = userRepository.findById(bookingDTO.getUserId())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + bookingDTO.getUserId()));
+
+        // Tạo booking mới
         Booking booking = new Booking();
-        booking.setBookingReference(generateBookingNumber());
-        booking.setUser(user);
         booking.setFlight(flight);
+        booking.setUser(user);
+        booking.setBookingReference(generateBookingReference());
         booking.setBookingDate(LocalDateTime.now());
-        booking.setTotalPrice(bookingDTO.getTotalPrice());
+        booking.setTotalPrice(calculateTotalPrice(flight, bookingDTO.getPassengerCount()));
         booking.setStatus("PENDING");
-        booking.setPassengerCount(bookingDTO.getPassengers().size());
-        booking.setTripType("ONE_WAY"); // Default to ONE_WAY, can be updated based on DTO
+        booking.setPassengerCount(bookingDTO.getPassengerCount());
+        booking.setTripType(bookingDTO.getTripType());
+        booking.setBookingSource(bookingDTO.getBookingSource());
+        booking.setPromotionCode(bookingDTO.getPromotionCode() != null ? bookingDTO.getPromotionCode() : "");
+        booking.setCancellationReason("");
 
-        // Save booking first to get the ID
-        booking = bookingRepository.save(booking);
-
-        // Process passengers
-        List<Passenger> passengers = new ArrayList<>();
-        for (PassengerDTO passengerDTO : bookingDTO.getPassengers()) {
-            passengerDTO.setBookingId(booking.getId());
-            Passenger passenger = passengerService.createPassenger(passengerDTO);
-            passengers.add(passenger);
-        }
-
-        booking.setPassengers(passengers);
+        // Lưu booking
         return bookingRepository.save(booking);
     }
 
     @Override
     @Transactional
-    public Booking updateBooking(Long id, BookingDTO bookingDTO) {
-        Booking booking = bookingRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Booking not found with id: " + id));
+    public Booking createBooking(Long flightId, Long userId, List<Passenger> passengers, String tripType) {
+        // Lấy thông tin flight
+        Flight flight = flightRepository.findById(flightId)
+                .orElseThrow(() -> new ResourceNotFoundException("Flight not found with id: " + flightId));
 
-        if (bookingDTO.getFlightId() != null) {
-            Flight flight = flightRepository.findById(bookingDTO.getFlightId())
-                    .orElseThrow(() -> new RuntimeException("Flight not found with id: " + bookingDTO.getFlightId()));
-            booking.setFlight(flight);
+        // Lấy thông tin user
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
+
+        // Tạo booking mới
+        Booking booking = new Booking();
+        booking.setFlight(flight);
+        booking.setUser(user);
+        booking.setBookingReference(generateBookingReference());
+        booking.setBookingDate(LocalDateTime.now());
+        booking.setTotalPrice(calculateTotalPrice(flight, passengers.size()));
+        booking.setStatus("PENDING");
+        booking.setPassengerCount(passengers.size());
+        booking.setTripType(tripType);
+        booking.setBookingSource("ONLINE");
+        booking.setPromotionCode("");
+        booking.setCancellationReason("");
+
+        // Lưu booking
+        Booking savedBooking = bookingRepository.save(booking);
+
+        // Lưu thông tin hành khách
+        for (Passenger passenger : passengers) {
+            passenger.setBooking(savedBooking);
+            passengerRepository.save(passenger);
         }
 
-        if (bookingDTO.getTotalPrice() != null) {
-            booking.setTotalPrice(bookingDTO.getTotalPrice());
-        }
-
-        // Update passenger count if passengers list is provided
-        if (bookingDTO.getPassengers() != null) {
-            booking.setPassengerCount(bookingDTO.getPassengers().size());
-        }
-
-        return bookingRepository.save(booking);
+        return savedBooking;
     }
 
     @Override
-    public void deleteBooking(Long id) {
-        Booking booking = bookingRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Booking not found with id: " + id));
+    @Transactional
+    public Booking createBookingWithPassengers(BookingDTO bookingDTO) {
+        // Tạo booking
+        Booking booking = createBooking(bookingDTO);
 
-        bookingRepository.delete(booking);
+        // Lưu thông tin hành khách
+        List<Passenger> passengers = bookingDTO.getPassengers().stream()
+                .map(passengerDTO -> {
+                    Passenger passenger = new Passenger();
+                    passenger.setFirstName(passengerDTO.getFirstName());
+                    passenger.setLastName(passengerDTO.getLastName());
+                    passenger.setDateOfBirth(passengerDTO.getBirthDate());
+                    passenger.setGender(passengerDTO.getGender());
+                    passenger.setNationality(passengerDTO.getNationality());
+                    passenger.setPassportNumber(passengerDTO.getPassportNumber());
+                    passenger.setPersonalId(passengerDTO.getPersonalId());
+                    passenger.setEmail("");
+                    passenger.setPhone("");
+                    passenger.setBooking(booking);
+                    return passenger;
+                })
+                .collect(Collectors.toList());
+
+        passengers.forEach(passenger -> passengerRepository.save(passenger));
+
+        return booking;
+    }
+
+    @Override
+    public List<Booking> getAllBookings() {
+        return bookingRepository.findAll();
     }
 
     @Override
     public Booking getBookingById(Long id) {
         return bookingRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Booking not found with id: " + id));
-    }
-
-    @Override
-    public Booking getBookingByBookingNumber(String bookingNumber) {
-        return bookingRepository.findByBookingReference(bookingNumber)
-                .orElseThrow(() -> new RuntimeException("Booking not found with booking number: " + bookingNumber));
+                .orElseThrow(() -> new ResourceNotFoundException("Booking not found with id: " + id));
     }
 
     @Override
@@ -131,22 +160,84 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<Booking> getAllBookings() {
-        return bookingRepository.findAll();
+    public Booking getBookingByBookingReference(String bookingReference) {
+        return bookingRepository.findByBookingReference(bookingReference)
+                .orElseThrow(
+                        () -> new ResourceNotFoundException("Booking not found with reference: " + bookingReference));
     }
 
     @Override
-    public void updateBookingStatus(Long id, String status) {
-        Booking booking = bookingRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Booking not found with id: " + id));
+    @Transactional
+    public Booking updateBooking(Long id, BookingDTO bookingDTO) {
+        Booking booking = getBookingById(id);
 
+        if (bookingDTO.getStatus() != null) {
+            booking.setStatus(bookingDTO.getStatus());
+        }
+
+        if (bookingDTO.getPassengerCount() != null) {
+            booking.setPassengerCount(bookingDTO.getPassengerCount());
+        }
+
+        if (bookingDTO.getTripType() != null) {
+            booking.setTripType(bookingDTO.getTripType());
+        }
+
+        if (bookingDTO.getBookingSource() != null) {
+            booking.setBookingSource(bookingDTO.getBookingSource());
+        }
+
+        if (bookingDTO.getPromotionCode() != null) {
+            booking.setPromotionCode(bookingDTO.getPromotionCode());
+        }
+
+        return bookingRepository.save(booking);
+    }
+
+    @Override
+    @Transactional
+    public Booking updateBookingStatus(Long id, String status) {
+        Booking booking = getBookingById(id);
         booking.setStatus(status);
+        return bookingRepository.save(booking);
+    }
+
+    @Override
+    @Transactional
+    public void updateBookingSeats(Long id, Integer seats) {
+        Booking booking = getBookingById(id);
+        booking.setPassengerCount(seats);
         bookingRepository.save(booking);
     }
 
-    private String generateBookingNumber() {
-        // Generate a random booking number with prefix "BK" followed by 8 alphanumeric
-        // characters
-        return "BK" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+    @Override
+    @Transactional
+    public void cancelBooking(Long id) {
+        Booking booking = getBookingById(id);
+        booking.setStatus("CANCELLED");
+        bookingRepository.save(booking);
+    }
+
+    @Override
+    @Transactional
+    public boolean cancelBooking(Long id, String reason) {
+        try {
+            Booking booking = getBookingById(id);
+            booking.setStatus("CANCELLED");
+            booking.setCancellationReason(reason);
+            bookingRepository.save(booking);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    // Phương thức hỗ trợ
+    private String generateBookingReference() {
+        return "B" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+    }
+
+    private Double calculateTotalPrice(Flight flight, int passengerCount) {
+        return flight.getCurrentPrice() * passengerCount;
     }
 }

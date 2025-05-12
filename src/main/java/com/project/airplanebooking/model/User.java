@@ -1,4 +1,4 @@
-package com.project.airplanebooking.entity;
+package com.project.airplanebooking.model;
 
 import java.time.LocalDateTime;
 
@@ -60,6 +60,20 @@ public class User extends BaseEntity {
     @Column(name = "google_account_id")
     private Integer googleAccountId;
 
+    @Column(name = "loyalty_points")
+    private Integer loyaltyPoints;
+
+    @Column(name = "last_searched_route")
+    private String lastSearchedRoute;
+
+    @Column(name = "preferred_airport_id")
+    private Integer preferredAirportId;
+
+    @Column(name = "preferred_seat_class")
+    private String preferredSeatClass;
+
+    @Column(name = "preferred_airline_id")
+    private Integer preferredAirlineId;
     /*
      * first name
      * last name

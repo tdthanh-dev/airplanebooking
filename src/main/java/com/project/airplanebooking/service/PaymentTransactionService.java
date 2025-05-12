@@ -15,8 +15,6 @@ public interface PaymentTransactionService {
 
     PaymentTransaction getPaymentTransactionById(Long id);
 
-    PaymentTransaction getPaymentTransactionByTransactionId(String transactionId);
-
     List<PaymentTransaction> getPaymentTransactionsByBooking(Booking booking);
 
     List<PaymentTransaction> getPaymentTransactionsByStatus(String status);

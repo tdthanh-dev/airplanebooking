@@ -1,52 +1,53 @@
 package com.project.airplanebooking.dto.request;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
 import java.time.LocalDateTime;
 
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+
+import lombok.Data;
+
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
 public class FlightDTO {
-    @NotBlank(message = "Flight number is required")
-    @JsonProperty("flight_no")
+    @NotNull(message = "Flight number is required")
+    @Size(min = 2, max = 10, message = "Flight number must be between 2 and 10 characters")
     private String flightNo;
 
-    @NotNull(message = "Airline ID is required")
-    @JsonProperty("airline_id")
-    private Long airlineId;
+    @NotNull(message = "Airline code is required")
+    private String airlineCode;
 
-    @NotNull(message = "Airplane ID is required")
-    @JsonProperty("airplane_id")
+    @NotNull(message = "Airplane id is required")
     private Long airplaneId;
 
-    @NotNull(message = "Departure airport ID is required")
-    @JsonProperty("departure_airport_id")
-    private Long departureAirportId;
+    @NotNull(message = "Departure airport code is required")
+    private String departureAirportCode;
 
-    @NotNull(message = "Arrival airport ID is required")
-    @JsonProperty("arrival_airport_id")
-    private Long arrivalAirportId;
+    @NotNull(message = "Arrival airport code is required")
+    private String arrivalAirportCode;
 
     @NotNull(message = "Departure time is required")
-    @JsonProperty("departure_time")
     private LocalDateTime departureTime;
 
     @NotNull(message = "Arrival time is required")
-    @JsonProperty("arrival_time")
     private LocalDateTime arrivalTime;
 
-    @NotNull(message = "Base price is required")
-    @Positive(message = "Base price must be positive")
-    @JsonProperty("base_price")
-    private Double basePrice;
+    @NotNull(message = "Base fare is required")
+    @Min(value = 0, message = "Base fare must be greater than or equal to 0")
+    private Double baseFare;
 
-    @JsonProperty("status")
-    private String status = "SCHEDULED";
+    private Double currentPrice;
+
+    private Boolean isFull;
+
+    private Integer delayMinutes;
+
+    private Integer availableSeats;
+    @Size(max = 20, message = "Status must be at most 20 characters")
+    private String status;
+
+    @Size(max = 20, message = "Flight type must be at most 20 characters")
+    private String flightType;
+
+    private Integer durationMinutes;
 }

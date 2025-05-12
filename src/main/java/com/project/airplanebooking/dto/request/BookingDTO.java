@@ -1,41 +1,47 @@
 package com.project.airplanebooking.dto.request;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
+import java.time.LocalDate;
 import java.util.List;
 
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+import lombok.Data;
+
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
 public class BookingDTO {
-    @NotNull(message = "User ID is required")
-    @JsonProperty("user_id")
-    private Long userId;
 
     @NotNull(message = "Flight ID is required")
-    @JsonProperty("flight_id")
     private Long flightId;
 
-    @NotNull(message = "Passengers are required")
-    @JsonProperty("passengers")
-    private List<PassengerDTO> passengers;
+    @NotNull(message = "User ID is required")
+    private Long userId;
 
     @NotNull(message = "Total price is required")
-    @Positive(message = "Total price must be positive")
-    @JsonProperty("total_price")
+    @Min(value = 0, message = "Total price must be non-negative")
     private Double totalPrice;
 
-    @JsonProperty("contact_email")
-    private String contactEmail;
+    @NotNull(message = "Passenger count is required")
+    @Min(value = 1, message = "At least one passenger is required")
+    private Integer passengerCount;
 
-    @JsonProperty("contact_phone")
-    private String contactPhone;
+    @Size(max = 20, message = "Status must be at most 20 characters")
+    private String status = "PENDING";
 
-    @JsonProperty("special_requests")
-    private String specialRequests;
+    @Size(max = 20, message = "Trip type must be at most 20 characters")
+    private String tripType = "ONE_WAY";
+
+    @NotNull(message = "Passengers are required")
+    private List<PassengerDTO> passengers;
+
+    private LocalDate bookingDate;
+
+    @Size(max = 50, message = "Booking source must be at most 50 characters")
+    private String bookingSource;
+
+    @Size(max = 20, message = "Promotion code must be at most 20 characters")
+    private String promotionCode;
+
+    @Size(max = 255, message = "Cancellation reason must be at most 255 characters")
+    private String cancellationReason;
 }

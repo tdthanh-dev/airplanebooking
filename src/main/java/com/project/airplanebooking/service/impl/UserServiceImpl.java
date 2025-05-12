@@ -22,17 +22,14 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User createUser(RegisterRequest registerRequest) {
-        // Check if username already exists
         if (userRepository.findByUsername(registerRequest.getUsername()).isPresent()) {
             throw new RuntimeException("Username already exists");
         }
 
-        // Check if email already exists
         if (userRepository.findByEmail(registerRequest.getEmail()).isPresent()) {
             throw new RuntimeException("Email already exists");
         }
 
-        // Verify passwords match
         if (!registerRequest.getPassword().equals(registerRequest.getConfirmPassword())) {
             throw new RuntimeException("Passwords do not match");
         }
@@ -41,14 +38,19 @@ public class UserServiceImpl implements UserService {
         user.setFirstName(registerRequest.getFirstName());
         user.setLastName(registerRequest.getLastName());
         user.setUsername(registerRequest.getUsername());
-        user.setPassword(passwordEncoder.encode(registerRequest.getPassword())); // Encrypt password
+        user.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
         user.setEmail(registerRequest.getEmail());
         user.setPhone(registerRequest.getPhone());
-        user.setRole("USER"); // Default role
+        user.setRole("USER");
         user.setStatus("ACTIVE");
         user.setIsActive(true);
         user.setFacebookAccountId(registerRequest.getFacebookAccountId());
         user.setGoogleAccountId(registerRequest.getGoogleAccountId());
+        user.setLoyaltyPoints(0);
+        user.setLastSearchedRoute(null);
+        user.setPreferredAirportId(null);
+        user.setPreferredSeatClass(null);
+        user.setPreferredAirlineId(null);
 
         return userRepository.save(user);
     }
@@ -58,13 +60,11 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
 
-        // Check if username already exists if it's changed
         if (!user.getUsername().equals(updatedUser.getUsername()) &&
                 userRepository.findByUsername(updatedUser.getUsername()).isPresent()) {
             throw new RuntimeException("Username already exists");
         }
 
-        // Check if email already exists if it's changed
         if (!user.getEmail().equals(updatedUser.getEmail()) &&
                 userRepository.findByEmail(updatedUser.getEmail()).isPresent()) {
             throw new RuntimeException("Email already exists");
@@ -74,13 +74,33 @@ public class UserServiceImpl implements UserService {
         user.setLastName(updatedUser.getLastName());
         user.setUsername(updatedUser.getUsername());
         if (updatedUser.getPassword() != null && !updatedUser.getPassword().isEmpty()) {
-            user.setPassword(passwordEncoder.encode(updatedUser.getPassword())); // Encrypt password
+            user.setPassword(passwordEncoder.encode(updatedUser.getPassword()));
         }
         user.setEmail(updatedUser.getEmail());
         user.setPhone(updatedUser.getPhone());
 
         if (updatedUser.getRole() != null) {
             user.setRole(updatedUser.getRole());
+        }
+
+        if (updatedUser.getLoyaltyPoints() != null) {
+            user.setLoyaltyPoints(updatedUser.getLoyaltyPoints());
+        }
+
+        if (updatedUser.getLastSearchedRoute() != null) {
+            user.setLastSearchedRoute(updatedUser.getLastSearchedRoute());
+        }
+
+        if (updatedUser.getPreferredAirportId() != null) {
+            user.setPreferredAirportId(updatedUser.getPreferredAirportId());
+        }
+
+        if (updatedUser.getPreferredSeatClass() != null) {
+            user.setPreferredSeatClass(updatedUser.getPreferredSeatClass());
+        }
+
+        if (updatedUser.getPreferredAirlineId() != null) {
+            user.setPreferredAirlineId(updatedUser.getPreferredAirlineId());
         }
 
         return userRepository.save(user);
@@ -91,7 +111,6 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
 
-        // Instead of deleting the user, set status to INACTIVE
         user.setStatus("INACTIVE");
         user.setIsActive(false);
         userRepository.save(user);
@@ -138,5 +157,35 @@ public class UserServiceImpl implements UserService {
     @Override
     public void deactivateUser(Long id) {
         updateUserStatus(id, "INACTIVE");
+    }
+
+    @Override
+    public void updateLoyaltyPoints(Long id, Integer points) {
+        User user = getUserById(id);
+        Integer currentPoints = user.getLoyaltyPoints() != null ? user.getLoyaltyPoints() : 0;
+        user.setLoyaltyPoints(currentPoints + points);
+        userRepository.save(user);
+    }
+
+    @Override
+    public void updateLastSearchedRoute(Long id, String route) {
+        User user = getUserById(id);
+        user.setLastSearchedRoute(route);
+        userRepository.save(user);
+    }
+
+    @Override
+    public void updatePreferences(Long id, Integer airportId, String seatClass, Integer airlineId) {
+        User user = getUserById(id);
+        if (airportId != null) {
+            user.setPreferredAirportId(airportId);
+        }
+        if (seatClass != null) {
+            user.setPreferredSeatClass(seatClass);
+        }
+        if (airlineId != null) {
+            user.setPreferredAirlineId(airlineId);
+        }
+        userRepository.save(user);
     }
 }

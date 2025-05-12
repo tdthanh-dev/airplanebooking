@@ -1,166 +1,58 @@
 package com.project.airplanebooking.service.impl;
 
-import com.project.airplanebooking.dto.request.FlightDTO;
-import com.project.airplanebooking.model.Flight;
-import com.project.airplanebooking.model.Airport;
-import com.project.airplanebooking.model.Airline;
-import com.project.airplanebooking.model.Airplane;
-import com.project.airplanebooking.repository.FlightRepository;
-import com.project.airplanebooking.repository.AirportRepository;
-import com.project.airplanebooking.repository.AirlineRepository;
-import com.project.airplanebooking.repository.AirplaneRepository;
-import com.project.airplanebooking.service.FlightService;
+import java.time.LocalDateTime;
+import java.time.LocalDate;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-import java.util.List;
+import com.project.airplanebooking.dto.request.FlightDTO;
+import com.project.airplanebooking.model.Airline;
+import com.project.airplanebooking.model.Airport;
+import com.project.airplanebooking.model.Flight;
+import com.project.airplanebooking.repository.AirlineRepository;
+import com.project.airplanebooking.repository.AirportRepository;
+import com.project.airplanebooking.repository.FlightRepository;
+import com.project.airplanebooking.service.FlightService;
 
 @Service
 public class FlightServiceImpl implements FlightService {
 
-    private final FlightRepository flightRepository;
-    private final AirportRepository airportRepository;
-    private final AirlineRepository airlineRepository;
-    private final AirplaneRepository airplaneRepository;
+    @Autowired
+    private FlightRepository flightRepository;
 
-    public FlightServiceImpl(FlightRepository flightRepository,
-            AirportRepository airportRepository,
-            AirlineRepository airlineRepository,
-            AirplaneRepository airplaneRepository) {
-        this.flightRepository = flightRepository;
-        this.airportRepository = airportRepository;
-        this.airlineRepository = airlineRepository;
-        this.airplaneRepository = airplaneRepository;
-    }
+    @Autowired
+    private AirportRepository airportRepository;
+
+    @Autowired
+    private AirlineRepository airlineRepository;
 
     @Override
     public Flight createFlight(FlightDTO flightDTO) {
-        Airport departureAirport = airportRepository.findById(flightDTO.getDepartureAirportId())
-                .orElseThrow(() -> new RuntimeException(
-                        "Departure airport not found with id: " + flightDTO.getDepartureAirportId()));
-
-        Airport arrivalAirport = airportRepository.findById(flightDTO.getArrivalAirportId())
-                .orElseThrow(() -> new RuntimeException(
-                        "Arrival airport not found with id: " + flightDTO.getArrivalAirportId()));
-
-        Airline airline = airlineRepository.findById(flightDTO.getAirlineId())
-                .orElseThrow(() -> new RuntimeException("Airline not found with id: " + flightDTO.getAirlineId()));
-
-        Airplane airplane = airplaneRepository.findById(flightDTO.getAirplaneId())
-                .orElseThrow(() -> new RuntimeException("Airplane not found with id: " + flightDTO.getAirplaneId()));
-
         Flight flight = new Flight();
+        Airport departureAirport = airportRepository.findByIataCode(flightDTO.getDepartureAirportCode())
+                .orElseThrow(() -> new RuntimeException("Departure airport not found"));
+        Airport arrivalAirport = airportRepository.findByIataCode(flightDTO.getArrivalAirportCode())
+                .orElseThrow(() -> new RuntimeException("Arrival airport not found"));
+        Airline airline = airlineRepository.findByIataCode(flightDTO.getAirlineCode())
+                .orElseThrow(() -> new RuntimeException("Airline not found"));
+
         flight.setFlightNo(flightDTO.getFlightNo());
         flight.setDepartureAirport(departureAirport);
         flight.setArrivalAirport(arrivalAirport);
-        flight.setDepartureTime(flightDTO.getDepartureTime());
-        flight.setArrivalTime(flightDTO.getArrivalTime());
         flight.setAirline(airline);
-        flight.setAirplane(airplane);
-        flight.setBaseFare(flightDTO.getBasePrice());
-        flight.setStatus(flightDTO.getStatus());
-
-        // Calculate duration in minutes
-        long durationMinutes = java.time.Duration.between(
-                flightDTO.getDepartureTime(), flightDTO.getArrivalTime()).toMinutes();
-        flight.setDurationMinutes((int) durationMinutes);
-
-        return flightRepository.save(flight);
-    }
-
-    @Override
-    public Flight updateFlight(Long id, FlightDTO flightDTO) {
-        Flight flight = flightRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Flight not found with id: " + id));
-
-        if (flightDTO.getDepartureAirportId() != null) {
-            Airport departureAirport = airportRepository.findById(flightDTO.getDepartureAirportId())
-                    .orElseThrow(() -> new RuntimeException(
-                            "Departure airport not found with id: " + flightDTO.getDepartureAirportId()));
-            flight.setDepartureAirport(departureAirport);
-        }
-
-        if (flightDTO.getArrivalAirportId() != null) {
-            Airport arrivalAirport = airportRepository.findById(flightDTO.getArrivalAirportId())
-                    .orElseThrow(() -> new RuntimeException(
-                            "Arrival airport not found with id: " + flightDTO.getArrivalAirportId()));
-            flight.setArrivalAirport(arrivalAirport);
-        }
-
-        if (flightDTO.getAirlineId() != null) {
-            Airline airline = airlineRepository.findById(flightDTO.getAirlineId())
-                    .orElseThrow(() -> new RuntimeException("Airline not found with id: " + flightDTO.getAirlineId()));
-            flight.setAirline(airline);
-        }
-
-        if (flightDTO.getAirplaneId() != null) {
-            Airplane airplane = airplaneRepository.findById(flightDTO.getAirplaneId())
-                    .orElseThrow(
-                            () -> new RuntimeException("Airplane not found with id: " + flightDTO.getAirplaneId()));
-            flight.setAirplane(airplane);
-        }
-
-        flight.setFlightNo(flightDTO.getFlightNo());
         flight.setDepartureTime(flightDTO.getDepartureTime());
         flight.setArrivalTime(flightDTO.getArrivalTime());
-        flight.setBaseFare(flightDTO.getBasePrice());
+        flight.setBaseFare(flightDTO.getBaseFare().doubleValue());
         flight.setStatus(flightDTO.getStatus());
-
-        // Recalculate duration in minutes if times have changed
-        long durationMinutes = java.time.Duration.between(
-                flightDTO.getDepartureTime(), flightDTO.getArrivalTime()).toMinutes();
-        flight.setDurationMinutes((int) durationMinutes);
+        flight.setAvailableSeats(flightDTO.getAvailableSeats());
+        flight.setCurrentPrice(flightDTO.getCurrentPrice());
+        flight.setIsFull(flightDTO.getIsFull());
+        flight.setDelayMinutes(flightDTO.getDelayMinutes());
+        flight.setFlightType(flightDTO.getFlightType());
 
         return flightRepository.save(flight);
-    }
-
-    @Override
-    public void deleteFlight(Long id) {
-        Flight flight = flightRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Flight not found with id: " + id));
-
-        flightRepository.delete(flight);
-    }
-
-    @Override
-    public Flight getFlightById(Long id) {
-        return flightRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Flight not found with id: " + id));
-    }
-
-    @Override
-    public Flight getFlightByFlightNumber(String flightNumber) {
-        return flightRepository.findByFlightNo(flightNumber)
-                .orElseThrow(() -> new RuntimeException("Flight not found with flight number: " + flightNumber));
-    }
-
-    @Override
-    public List<Flight> getFlightsByDepartureAirport(Airport departureAirport) {
-        return flightRepository.findByDepartureAirport(departureAirport);
-    }
-
-    @Override
-    public List<Flight> getFlightsByArrivalAirport(Airport arrivalAirport) {
-        return flightRepository.findByArrivalAirport(arrivalAirport);
-    }
-
-    @Override
-    public List<Flight> getFlightsByDepartureTimeBetween(LocalDateTime start, LocalDateTime end) {
-        return flightRepository.findByDepartureTimeBetween(start, end);
-    }
-
-    @Override
-    public List<Flight> getFlightsByAirline(Airline airline) {
-        return flightRepository.findByAirline(airline);
-    }
-
-    @Override
-    public List<Flight> searchFlights(Airport departureAirport, Airport arrivalAirport, LocalDateTime departureDate) {
-        // Assuming departureDate is start of day, we need end of day for search
-        LocalDateTime endOfDay = departureDate.toLocalDate().atTime(23, 59, 59);
-
-        return flightRepository.findByDepartureAirportAndArrivalAirportAndDepartureTimeBetween(
-                departureAirport, arrivalAirport, departureDate, endOfDay);
     }
 
     @Override
@@ -169,11 +61,142 @@ public class FlightServiceImpl implements FlightService {
     }
 
     @Override
-    public void updateFlightStatus(Long id, String status) {
-        Flight flight = flightRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Flight not found with id: " + id));
+    public Flight getFlightById(Long id) {
+        return flightRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Flight not found"));
+    }
 
+    @Override
+    public Flight getFlightByFlightNumber(String flightNumber) {
+        return flightRepository.findByFlightNo(flightNumber)
+                .orElseThrow(() -> new RuntimeException("Flight not found"));
+    }
+
+    @Override
+    public List<Flight> searchFlights(String departureAirport, String arrivalAirport, LocalDate departureDate) {
+        LocalDateTime startOfDay = departureDate.atStartOfDay();
+        LocalDateTime endOfDay = departureDate.atTime(23, 59, 59);
+
+        return flightRepository.findByDepartureAirportIataCodeAndArrivalAirportIataCodeAndDepartureTimeBetween(
+                departureAirport, arrivalAirport, startOfDay, endOfDay);
+    }
+
+    @Override
+    public List<Flight> getFlightsByAirline(String airlineCode) {
+        Airline airline = airlineRepository.findByIataCode(airlineCode)
+                .orElseThrow(() -> new RuntimeException("Airline not found"));
+        return flightRepository.findByAirline(airline);
+    }
+
+    @Override
+    public Flight updateFlight(Long id, FlightDTO flightDTO) {
+        Flight flight = getFlightById(id);
+
+        if (flightDTO.getFlightNo() != null) {
+            flight.setFlightNo(flightDTO.getFlightNo());
+        }
+
+        if (flightDTO.getDepartureAirportCode() != null) {
+            Airport departureAirport = airportRepository.findByIataCode(flightDTO.getDepartureAirportCode())
+                    .orElseThrow(() -> new RuntimeException("Departure airport not found"));
+            flight.setDepartureAirport(departureAirport);
+        }
+
+        if (flightDTO.getArrivalAirportCode() != null) {
+            Airport arrivalAirport = airportRepository.findByIataCode(flightDTO.getArrivalAirportCode())
+                    .orElseThrow(() -> new RuntimeException("Arrival airport not found"));
+            flight.setArrivalAirport(arrivalAirport);
+        }
+
+        if (flightDTO.getAirlineCode() != null) {
+            Airline airline = airlineRepository.findByIataCode(flightDTO.getAirlineCode())
+                    .orElseThrow(() -> new RuntimeException("Airline not found"));
+            flight.setAirline(airline);
+        }
+
+        if (flightDTO.getDepartureTime() != null) {
+            flight.setDepartureTime(flightDTO.getDepartureTime());
+        }
+
+        if (flightDTO.getArrivalTime() != null) {
+            flight.setArrivalTime(flightDTO.getArrivalTime());
+        }
+
+        if (flightDTO.getBaseFare() != null) {
+            flight.setBaseFare(flightDTO.getBaseFare().doubleValue());
+        }
+
+        if (flightDTO.getStatus() != null) {
+            flight.setStatus(flightDTO.getStatus());
+        }
+
+        if (flightDTO.getCurrentPrice() != null) {
+            flight.setCurrentPrice(flightDTO.getCurrentPrice());
+        }
+
+        if (flightDTO.getIsFull() != null) {
+            flight.setIsFull(flightDTO.getIsFull());
+        }
+
+        if (flightDTO.getDelayMinutes() != null) {
+            flight.setDelayMinutes(flightDTO.getDelayMinutes());
+        }
+
+        if (flightDTO.getFlightType() != null) {
+            flight.setFlightType(flightDTO.getFlightType());
+        }
+
+        return flightRepository.save(flight);
+    }
+
+    @Override
+    public void deleteFlight(Long id) {
+        Flight flight = getFlightById(id);
+        flightRepository.delete(flight);
+    }
+
+    @Override
+    public void updateFlightStatus(Long id, String status) {
+        Flight flight = getFlightById(id);
         flight.setStatus(status);
         flightRepository.save(flight);
+    }
+
+    @Override
+    public List<Flight> searchFlightsOneWay(String departureAirport, String arrivalAirport, LocalDate departureDate,
+            Integer totalPassengers) {
+        LocalDateTime startOfDay = departureDate.atStartOfDay();
+        LocalDateTime endOfDay = departureDate.atTime(23, 59, 59);
+
+        List<Flight> listFlights = flightRepository
+                .findByDepartureAirportIataCodeAndArrivalAirportIataCodeAndDepartureTimeBetween(
+                        departureAirport, arrivalAirport, startOfDay, endOfDay);
+
+        for (Flight flight : listFlights) {
+            if (totalPassengers > flight.getAvailableSeats()) {
+                listFlights.remove(flight);
+            }
+        }
+
+        return listFlights;
+    }
+
+    @Override
+    public List<Flight> searchFlightsRoundTrip(String departureAirport, String arrivalAirport, LocalDate departureDate,
+            LocalDate returnDate, Integer totalPassengers) {
+        LocalDateTime startOfDay = departureDate.atStartOfDay();
+        LocalDateTime endOfDay = departureDate.atTime(23, 59, 59);
+
+        List<Flight> listFlights = flightRepository
+                .findByDepartureAirportIataCodeAndArrivalAirportIataCodeAndDepartureTimeBetween(
+                        departureAirport, arrivalAirport, startOfDay, endOfDay);
+
+        for (Flight flight : listFlights) {
+            if (totalPassengers > flight.getAvailableSeats()) {
+                listFlights.remove(flight);
+            }
+        }
+
+        return listFlights;
     }
 }

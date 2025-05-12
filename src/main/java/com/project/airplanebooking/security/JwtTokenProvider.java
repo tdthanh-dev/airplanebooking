@@ -66,7 +66,6 @@ public class JwtTokenProvider {
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
-    // Extract username from JWT token
     public String getUsernameFromJWT(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(getSigningKey())
@@ -76,7 +75,6 @@ public class JwtTokenProvider {
                 .getSubject();
     }
 
-    // Validate JWT token
     public boolean validateToken(String token) {
         try {
             Jwts.parserBuilder().setSigningKey(getSigningKey()).build().parseClaimsJws(token);
@@ -108,7 +106,6 @@ public class JwtTokenProvider {
         return null;
     }
 
-    // Extract expiration date from token
     public Date extractExpiration(String token) {
         return extractClaim(token, Claims::getExpiration);
     }
@@ -127,7 +124,6 @@ public class JwtTokenProvider {
                 .getBody();
     }
 
-    // Check if token is expired
     public boolean isTokenExpired(String token) {
         return extractExpiration(token).before(new Date());
     }

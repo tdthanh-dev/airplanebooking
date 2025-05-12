@@ -8,7 +8,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ForeignKey;
 import jakarta.persistence.FetchType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -28,16 +27,18 @@ public class Passenger extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "full_name", nullable = false, length = 50)
-    private String fullName;
-    @Column(name = "phone_number", nullable = false, length = 13)
-    private String phoneNumber;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "booking_id", nullable = true)
+    private Booking booking;
 
-    @Column(name = "email", nullable = false, length = 50)
-    private String email;
+    @Column(name = "first_name", nullable = false, length = 50)
+    private String firstName;
 
-    @Column(name = "birth_date", nullable = false)
-    private LocalDate birthDate;
+    @Column(name = "last_name", nullable = false, length = 50)
+    private String lastName;
+
+    @Column(name = "date_of_birth", nullable = false)
+    private LocalDate dateOfBirth;
 
     @Column(name = "gender", nullable = false, length = 10)
     private String gender;
@@ -45,10 +46,16 @@ public class Passenger extends BaseEntity {
     @Column(name = "nationality", nullable = false, length = 50)
     private String nationality;
 
-    @Column(name = "passport_number", nullable = false, length = 50)
+    @Column(name = "passport_number", nullable = false, length = 20)
     private String passportNumber;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "booking_id", foreignKey = @ForeignKey(name = "fk_passenger_booking"))
-    private Booking booking;
+    @Column(name = "personal_id", nullable = false, length = 13)
+    private String personalId;
+
+    @Column(name = "email", nullable = false, length = 100)
+    private String email;
+
+    @Column(name = "phone", nullable = false, length = 20)
+    private String phone;
+
 }

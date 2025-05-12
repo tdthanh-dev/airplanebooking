@@ -13,7 +13,6 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ForeignKey;
 import jakarta.persistence.FetchType;
 
 @Entity
@@ -31,19 +30,19 @@ public class Flight extends BaseEntity {
     private String flightNo;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "airline_id", nullable = false, foreignKey = @ForeignKey(name = "fk_flight_airline"))
+    @JoinColumn(name = "airline_id", nullable = false)
     private Airline airline;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "airplane_id", nullable = false, foreignKey = @ForeignKey(name = "fk_flight_airplane"))
+    @JoinColumn(name = "airplane_id", nullable = false)
     private Airplane airplane;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "departure_airport_id", nullable = false, foreignKey = @ForeignKey(name = "fk_flight_departure_airport"))
+    @JoinColumn(name = "departure_airport_id", nullable = false)
     private Airport departureAirport;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "arrival_airport_id", nullable = false, foreignKey = @ForeignKey(name = "fk_flight_arrival_airport"))
+    @JoinColumn(name = "arrival_airport_id", nullable = false)
     private Airport arrivalAirport;
 
     @Column(name = "departure_time", nullable = false)
@@ -60,4 +59,21 @@ public class Flight extends BaseEntity {
 
     @Column(name = "status", nullable = false, length = 50)
     private String status;
+
+    @Column(name = "current_price", nullable = false)
+    private Double currentPrice;
+
+    @Column(name = "is_full", nullable = false)
+    private Boolean isFull;
+
+    @Column(name = "available_seats", nullable = false)
+    private Integer availableSeats;
+
+    @Column(name = "delay_minutes", nullable = false)
+    private Integer delayMinutes;
+
+    @Column(name = "flight_type", nullable = false, length = 50)
+    private String flightType;
+
+    
 }

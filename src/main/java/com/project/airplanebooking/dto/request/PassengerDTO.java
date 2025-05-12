@@ -1,44 +1,41 @@
 package com.project.airplanebooking.dto.request;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
 import java.time.LocalDate;
 
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Past;
+import jakarta.validation.constraints.Pattern;
+import lombok.Data;
+
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
 public class PassengerDTO {
-    @NotBlank(message = "Full name is required")
-    @JsonProperty("full_name")
-    private String fullName;
 
-    @JsonProperty("phone_number")
-    @Pattern(regexp = "^[0-9]{10}$", message = "Invalid phone number")
-    private String phoneNumber;
+    @NotBlank(message = "First name is required")
+    private String firstName;
 
-    @Email(message = "Invalid email format")
-    @JsonProperty("email")
-    private String email;
+    @NotBlank(message = "Last name is required")
+    private String lastName;
 
-    @JsonProperty("birth_date")
+    @NotNull(message = "Personal ID is required")
+    private String personalId;
+
+    @NotNull(message = "Birth date is required")
+    @Past(message = "Birth date must be in the past")
     private LocalDate birthDate;
 
-    @NotBlank(message = "Nationality is required")
-    @JsonProperty("nationality")
-    private String nationality;
-
-    @JsonProperty("gender")
+    @NotBlank(message = "Gender is required")
     private String gender;
 
-    @JsonProperty("passport_number")
+    @NotBlank(message = "Nationality is required")
+    private String nationality;
+
     private String passportNumber;
 
-    @JsonProperty("booking_id")
-    private Long bookingId;
+    @Email(message = "Email should be valid")
+    private String email;
+
+    @Pattern(regexp = "^[0-9]{10,11}$", message = "Phone number should be 10-11 digits")
+    private String phone;
 }

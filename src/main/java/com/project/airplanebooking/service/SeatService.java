@@ -1,10 +1,10 @@
 package com.project.airplanebooking.service;
 
-import com.project.airplanebooking.dto.request.SeatDTO;
-import com.project.airplanebooking.model.Seat;
-import com.project.airplanebooking.model.Airplane;
-
 import java.util.List;
+
+import com.project.airplanebooking.dto.request.SeatDTO;
+import com.project.airplanebooking.model.Airplane;
+import com.project.airplanebooking.model.Seat;
 
 public interface SeatService {
     Seat createSeat(SeatDTO seatDTO);
@@ -15,15 +15,13 @@ public interface SeatService {
 
     Seat getSeatById(Long id);
 
-    Seat getSeatByAirplaneAndSeatNumber(Airplane airplane, String seatNumber);
+    List<Seat> getAllSeats();
 
     List<Seat> getSeatsByAirplane(Airplane airplane);
 
-    List<Seat> getSeatsByAirplaneAndSeatClass(Airplane airplane, String seatClass);
+    List<Seat> getAvailableSeatsByAirplane(Airplane airplane);
 
-    List<Seat> getSeatsBySeatClass(String seatClass);
-
-    List<Seat> getAllSeats();
+    Seat getSeatBySeatNumber(String seatNumber, Airplane airplane);
 
     void updateSeatAvailability(Long id, boolean isAvailable);
 }

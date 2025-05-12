@@ -12,7 +12,6 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ForeignKey;
 import jakarta.persistence.FetchType;
 
 @Entity
@@ -30,7 +29,7 @@ public class Airplane extends BaseEntity {
     private String model;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "airline_id", nullable = false, foreignKey = @ForeignKey(name = "fk_airplane_airline"))
+    @JoinColumn(name = "airline_id", nullable = false)
     private Airline airline;
 
     @Column(name = "registration_number", nullable = false, length = 50)

@@ -94,13 +94,6 @@ public class PaymentTransactionServiceImpl implements PaymentTransactionService 
     }
 
     @Override
-    public PaymentTransaction getPaymentTransactionByTransactionId(String transactionId) {
-        return paymentTransactionRepository.findByTransactionId(transactionId)
-                .orElseThrow(() -> new RuntimeException(
-                        "Payment transaction not found with transaction id: " + transactionId));
-    }
-
-    @Override
     public List<PaymentTransaction> getPaymentTransactionsByBooking(Booking booking) {
         return paymentTransactionRepository.findByBooking(booking);
     }

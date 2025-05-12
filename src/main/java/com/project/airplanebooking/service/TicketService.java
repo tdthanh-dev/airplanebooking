@@ -1,13 +1,12 @@
 package com.project.airplanebooking.service;
 
+import java.util.List;
+
 import com.project.airplanebooking.dto.request.TicketDTO;
-import com.project.airplanebooking.model.Ticket;
 import com.project.airplanebooking.model.Booking;
 import com.project.airplanebooking.model.Flight;
 import com.project.airplanebooking.model.Passenger;
-import com.project.airplanebooking.model.Seat;
-
-import java.util.List;
+import com.project.airplanebooking.model.Ticket;
 
 public interface TicketService {
     Ticket createTicket(TicketDTO ticketDTO);
@@ -18,19 +17,25 @@ public interface TicketService {
 
     Ticket getTicketById(Long id);
 
-    Ticket getTicketByTicketNumber(String ticketNumber);
+    List<Ticket> getAllTickets();
 
     List<Ticket> getTicketsByBooking(Booking booking);
 
-    List<Ticket> getTicketsByPassenger(Passenger passenger);
-
     List<Ticket> getTicketsByFlight(Flight flight);
 
-    List<Ticket> getTicketsBySeat(Seat seat);
+    List<Ticket> getTicketsByPassenger(Passenger passenger);
 
-    Ticket getTicketByFlightAndSeat(Flight flight, Seat seat);
+    void cancelTicket(Long id);
 
-    List<Ticket> getAllTickets();
+    Ticket getTicketByTicketNumber(String ticketNumber);
 
-    void updateTicketStatus(Long id, String status);
+    Ticket createTicket(Booking booking, Passenger passenger, String seatNumber);
+
+    List<Ticket> generateTicketsForBooking(Long bookingId);
+
+    List<Ticket> getTicketsByBookingId(Long bookingId);
+
+    Ticket updateTicketStatus(Long id, String status);
+
+    boolean cancelTicketWithResult(Long id);
 }

@@ -5,15 +5,18 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.project.airplanebooking.dto.request.RegisterRequest;
-import com.project.airplanebooking.dto.request.UserRequest;
+import com.project.airplanebooking.dto.request.LoginRequest;
+import com.project.airplanebooking.dto.response.RegisterResponse;
 import com.project.airplanebooking.dto.response.UserResponse;
 import com.project.airplanebooking.service.AuthService;
 
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.CrossOrigin;
 
 @RestController
 @RequestMapping("/auth")
+@CrossOrigin(origins = { "http://localhost:3000", "http://localhost:8080" })
 public class AuthController {
 
     private final AuthService authService;
@@ -23,14 +26,14 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<UserResponse> login(@RequestBody UserRequest loginRequest) {
+    public ResponseEntity<UserResponse> login(@RequestBody LoginRequest loginRequest) {
         UserResponse response = authService.login(loginRequest);
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/register")
-    public ResponseEntity<UserResponse> register(@RequestBody RegisterRequest registerRequest) {
-        UserResponse response = authService.register(registerRequest);
+    public ResponseEntity<RegisterResponse> register(@RequestBody RegisterRequest registerRequest) {
+        RegisterResponse response = authService.register(registerRequest);
         return ResponseEntity.ok(response);
     }
 }

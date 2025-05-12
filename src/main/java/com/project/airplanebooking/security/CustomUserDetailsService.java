@@ -1,6 +1,6 @@
 package com.project.airplanebooking.security;
 
-import com.project.airplanebooking.entity.User;
+import com.project.airplanebooking.model.User;
 import com.project.airplanebooking.repository.UserRepository;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;

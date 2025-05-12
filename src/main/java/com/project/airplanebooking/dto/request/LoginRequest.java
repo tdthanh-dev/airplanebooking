@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserRequest {
+public class LoginRequest {
     @NotBlank(message = "Username is required")
     @JsonProperty("username")
     private String username;

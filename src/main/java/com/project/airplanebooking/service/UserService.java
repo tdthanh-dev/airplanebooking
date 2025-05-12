@@ -25,4 +25,10 @@ public interface UserService {
     void activateUser(Long id);
 
     void deactivateUser(Long id);
+
+    void updateLoyaltyPoints(Long id, Integer points);
+
+    void updateLastSearchedRoute(Long id, String route);
+
+    void updatePreferences(Long id, Integer airportId, String seatClass, Integer airlineId);
 }
