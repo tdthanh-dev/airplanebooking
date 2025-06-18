@@ -10,9 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.project.airplanebooking.dto.request.SeatDTO;
 import com.project.airplanebooking.dto.response.SeatResponse;
-import com.project.airplanebooking.model.Flight;
 import com.project.airplanebooking.model.Seat;
-import com.project.airplanebooking.service.impl.FlightServiceImpl;
 import com.project.airplanebooking.service.impl.SeatServiceImpl;
 
 import jakarta.validation.Valid;
@@ -21,11 +19,12 @@ import jakarta.validation.Valid;
 @RequestMapping("api/v1/seats")
 public class SeatController {
 
-    @Autowired
-    private SeatServiceImpl seatServiceImpl;
+    private final SeatServiceImpl seatServiceImpl;
 
     @Autowired
-    private FlightServiceImpl flightServiceImpl;
+    public SeatController(SeatServiceImpl seatServiceImpl) {
+        this.seatServiceImpl = seatServiceImpl;
+    }
 
     @PostMapping("/")
     public ResponseEntity<?> createSeat(@Valid @RequestBody SeatDTO seatDTO) {
@@ -60,34 +59,6 @@ public class SeatController {
         }
     }
 
-    @GetMapping("/flight/{flightId}")
-    public ResponseEntity<?> getSeatsByFlight(@PathVariable Long flightId) {
-        try {
-            Flight flight = flightServiceImpl.getFlightById(flightId);
-            List<Seat> seats = seatServiceImpl.getSeatsByAirplane(flight.getAirplane());
-            List<SeatResponse> responseList = seats.stream()
-                    .map(SeatResponse::new)
-                    .collect(Collectors.toList());
-            return ResponseEntity.ok(responseList);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        }
-    }
-
-    @GetMapping("/available/flight/{flightId}")
-    public ResponseEntity<?> getAvailableSeatsByFlight(@PathVariable Long flightId) {
-        try {
-            Flight flight = flightServiceImpl.getFlightById(flightId);
-            List<Seat> seats = seatServiceImpl.getAvailableSeatsByAirplane(flight.getAirplane());
-            List<SeatResponse> responseList = seats.stream()
-                    .map(SeatResponse::new)
-                    .collect(Collectors.toList());
-            return ResponseEntity.ok(responseList);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        }
-    }
-
     @PutMapping("/{id}")
     public ResponseEntity<?> updateSeat(@PathVariable Long id, @Valid @RequestBody SeatDTO seatDTO) {
         try {
@@ -108,14 +79,26 @@ public class SeatController {
         }
     }
 
-    @GetMapping("/number/{seatNumber}/flight/{flightId}")
-    public ResponseEntity<?> getSeatByNumberAndFlight(@PathVariable String seatNumber, @PathVariable Long flightId) {
+    @PutMapping("/hold")
+    public ResponseEntity<?> changeSeatsToHold(@RequestBody List<Long> seatIds, @RequestParam Long flightId) {
         try {
-            Flight flight = flightServiceImpl.getFlightById(flightId);
-            Seat seat = seatServiceImpl.getSeatBySeatNumber(seatNumber, flight.getAirplane());
-            return ResponseEntity.ok(new SeatResponse(seat));
+            seatServiceImpl.changeSeatsToHold(seatIds, flightId);
+            return ResponseEntity.ok("Seats changed to hold successfully");
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/airplane/{airplaneId}")
+    public ResponseEntity<?> getSeatByAirplane(@PathVariable Long airplaneId) {
+        try {
+            List<Seat> seats = seatServiceImpl.findSeatByAirplane(airplaneId);
+            List<SeatResponse> responseList = seats.stream()
+                    .map(SeatResponse::new)
+                    .collect(Collectors.toList());
+            return ResponseEntity.ok(responseList);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
 }

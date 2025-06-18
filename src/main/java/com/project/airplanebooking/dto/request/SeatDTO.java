@@ -24,5 +24,6 @@ public class SeatDTO {
     @Positive(message = "Price must be positive")
     private Double price;
 
-    private Boolean isAvailable = true;
+    @NotBlank(message = "Status is required")
+    private String status;
 }

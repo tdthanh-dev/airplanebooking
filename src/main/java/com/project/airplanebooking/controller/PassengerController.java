@@ -21,11 +21,14 @@ import jakarta.validation.Valid;
 @RequestMapping("api/v1/passengers")
 public class PassengerController {
 
-    @Autowired
-    private PassengerServiceImpl passengerServiceImpl;
+    private final PassengerServiceImpl passengerServiceImpl;
+    private final BookingServiceImpl bookingServiceImpl;
 
     @Autowired
-    private BookingServiceImpl bookingServiceImpl;
+    public PassengerController(PassengerServiceImpl passengerServiceImpl, BookingServiceImpl bookingServiceImpl) {
+        this.passengerServiceImpl = passengerServiceImpl;
+        this.bookingServiceImpl = bookingServiceImpl;
+    }
 
     @PostMapping("/")
     public ResponseEntity<?> createPassenger(@Valid @RequestBody PassengerDTO passengerDTO) {
@@ -60,20 +63,6 @@ public class PassengerController {
         }
     }
 
-    @GetMapping("/booking/{bookingId}")
-    public ResponseEntity<?> getPassengersByBooking(@PathVariable Long bookingId) {
-        try {
-            Booking booking = bookingServiceImpl.getBookingById(bookingId);
-            List<Passenger> passengers = passengerServiceImpl.getPassengersByBooking(booking);
-            List<PassengerResponse> responseList = passengers.stream()
-                    .map(PassengerResponse::new)
-                    .collect(Collectors.toList());
-            return ResponseEntity.ok(responseList);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        }
-    }
-
     @PutMapping("/{id}")
     public ResponseEntity<?> updatePassenger(@PathVariable Long id, @Valid @RequestBody PassengerDTO passengerDTO) {
         try {
@@ -94,16 +83,4 @@ public class PassengerController {
         }
     }
 
-    @GetMapping("/document/{documentNumber}")
-    public ResponseEntity<?> getPassengerByDocument(@PathVariable String documentNumber) {
-        try {
-            List<Passenger> passengers = passengerServiceImpl.getPassengersByPassportNumber(documentNumber);
-            List<PassengerResponse> responseList = passengers.stream()
-                    .map(PassengerResponse::new)
-                    .collect(Collectors.toList());
-            return ResponseEntity.ok(responseList);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        }
-    }
 }

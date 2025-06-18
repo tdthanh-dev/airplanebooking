@@ -1,5 +1,7 @@
 package com.project.airplanebooking.model;
 
+import java.time.LocalDateTime;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -41,7 +43,9 @@ public class Seat extends BaseEntity {
     @Column(name = "price", nullable = false)
     private Double price;
 
-    @Column(name = "is_available", nullable = false)
-    private Boolean isAvailable;
+    @Column(name = "date_hold", nullable = true)
+    private LocalDateTime dateHold;
 
+    @Column(name = "status", nullable = false, length = 50)
+    private String status; // Giá trị: "AVAILABLE", "BOOKED", "HOLD"
 }

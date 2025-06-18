@@ -43,19 +43,7 @@ public class Passenger extends BaseEntity {
     @Column(name = "gender", nullable = false, length = 10)
     private String gender;
 
-    @Column(name = "nationality", nullable = false, length = 50)
-    private String nationality;
-
-    @Column(name = "passport_number", nullable = false, length = 20)
-    private String passportNumber;
-
     @Column(name = "personal_id", nullable = false, length = 13)
     private String personalId;
-
-    @Column(name = "email", nullable = false, length = 100)
-    private String email;
-
-    @Column(name = "phone", nullable = false, length = 20)
-    private String phone;
 
 }

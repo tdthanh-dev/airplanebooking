@@ -19,8 +19,12 @@ import jakarta.validation.Valid;
 @RequestMapping("api/v1/payment-methods")
 public class PaymentMethodController {
 
+    private final PaymentMethodServiceImpl paymentMethodServiceImpl;
+
     @Autowired
-    private PaymentMethodServiceImpl paymentMethodServiceImpl;
+    public PaymentMethodController(PaymentMethodServiceImpl paymentMethodServiceImpl) {
+        this.paymentMethodServiceImpl = paymentMethodServiceImpl;
+    }
 
     @PostMapping("/")
     public ResponseEntity<?> createPaymentMethod(@Valid @RequestBody PaymentMethodDTO paymentMethodDTO) {

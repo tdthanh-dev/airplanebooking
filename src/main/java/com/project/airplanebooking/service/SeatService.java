@@ -3,7 +3,6 @@ package com.project.airplanebooking.service;
 import java.util.List;
 
 import com.project.airplanebooking.dto.request.SeatDTO;
-import com.project.airplanebooking.model.Airplane;
 import com.project.airplanebooking.model.Seat;
 
 public interface SeatService {
@@ -17,11 +16,9 @@ public interface SeatService {
 
     List<Seat> getAllSeats();
 
-    List<Seat> getSeatsByAirplane(Airplane airplane);
+    void checkAndUpdateExpiredHoldSeats();
 
-    List<Seat> getAvailableSeatsByAirplane(Airplane airplane);
+    void changeSeatsToHold(List<Long> seatIds, Long flightId);
 
-    Seat getSeatBySeatNumber(String seatNumber, Airplane airplane);
-
-    void updateSeatAvailability(Long id, boolean isAvailable);
+    List<Seat> findSeatByAirplane(Long airplaneId);
 }

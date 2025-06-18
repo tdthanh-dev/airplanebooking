@@ -1,6 +1,8 @@
 package com.project.airplanebooking.service.impl;
 
 import com.project.airplanebooking.dto.request.AirplaneDTO;
+import com.project.airplanebooking.exception.EntityNotFoundException;
+import com.project.airplanebooking.exception.ResourceNotFoundException;
 import com.project.airplanebooking.model.Airplane;
 import com.project.airplanebooking.model.Airline;
 import com.project.airplanebooking.repository.AirplaneRepository;
@@ -24,7 +26,7 @@ public class AirplaneServiceImpl implements AirplaneService {
     @Override
     public Airplane createAirplane(AirplaneDTO airplaneDTO) {
         Airline airline = airlineRepository.findById(airplaneDTO.getAirlineId())
-                .orElseThrow(() -> new RuntimeException("Airline not found with id: " + airplaneDTO.getAirlineId()));
+                .orElseThrow(() -> new EntityNotFoundException(Airline.class, airplaneDTO.getAirlineId()));
 
         Airplane airplane = new Airplane();
         airplane.setModel(airplaneDTO.getModel());
@@ -38,12 +40,11 @@ public class AirplaneServiceImpl implements AirplaneService {
     @Override
     public Airplane updateAirplane(Long id, AirplaneDTO airplaneDTO) {
         Airplane airplane = airplaneRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Airplane not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException(Airplane.class, id));
 
         if (airplaneDTO.getAirlineId() != null) {
             Airline airline = airlineRepository.findById(airplaneDTO.getAirlineId())
-                    .orElseThrow(
-                            () -> new RuntimeException("Airline not found with id: " + airplaneDTO.getAirlineId()));
+                    .orElseThrow(() -> new EntityNotFoundException(Airline.class, airplaneDTO.getAirlineId()));
             airplane.setAirline(airline);
         }
 
@@ -57,7 +58,7 @@ public class AirplaneServiceImpl implements AirplaneService {
     @Override
     public void deleteAirplane(Long id) {
         Airplane airplane = airplaneRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Airplane not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException(Airplane.class, id));
 
         airplaneRepository.delete(airplane);
     }
@@ -65,14 +66,14 @@ public class AirplaneServiceImpl implements AirplaneService {
     @Override
     public Airplane getAirplaneById(Long id) {
         return airplaneRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Airplane not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException(Airplane.class, id));
     }
 
     @Override
     public Airplane getAirplaneByRegistrationNumber(String registrationNumber) {
         return airplaneRepository.findByRegistrationNumber(registrationNumber)
-                .orElseThrow(() -> new RuntimeException(
-                        "Airplane not found with registration number: " + registrationNumber));
+                .orElseThrow(
+                        () -> new ResourceNotFoundException("Airplane", "registration number", registrationNumber));
     }
 
     @Override

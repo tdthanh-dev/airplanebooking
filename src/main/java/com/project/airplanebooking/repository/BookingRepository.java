@@ -8,7 +8,6 @@ import org.springframework.stereotype.Repository;
 
 import com.project.airplanebooking.model.Booking;
 import com.project.airplanebooking.model.User;
-import com.project.airplanebooking.model.Flight;
 
 @Repository
 public interface BookingRepository extends JpaRepository<Booking, Long> {
@@ -18,5 +17,4 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     List<Booking> findByStatus(String status);
 
-    List<Booking> findByFlight(Flight flight);
 }

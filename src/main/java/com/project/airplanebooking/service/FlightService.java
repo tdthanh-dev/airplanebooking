@@ -8,27 +8,29 @@ import com.project.airplanebooking.dto.request.FlightDTO;
 import com.project.airplanebooking.model.Flight;
 
 public interface FlightService {
-    Flight createFlight(FlightDTO flightDTO);
+        Flight createFlight(FlightDTO flightDTO);
 
-    List<Flight> getAllFlights();
+        List<Flight> getAllFlights();
 
-    Flight getFlightById(Long id);
+        Flight getFlightById(Long id);
 
-    Flight getFlightByFlightNumber(String flightNumber);
+        Flight getFlightByFlightNumber(String flightNumber);
 
-    List<Flight> searchFlights(String departureAirportCode, String arrivalAirportCode, LocalDate departureDate);
+        List<Flight> searchFlights(String departureAirportCode, String arrivalAirportCode, LocalDate departureDate);
 
-    List<Flight> getFlightsByAirline(String airlineCode);
+        List<Flight> getFlightsByAirline(String airlineCode);
 
-    Flight updateFlight(Long id, FlightDTO flightDTO);
+        Flight updateFlight(Long id, FlightDTO flightDTO);
 
-    void deleteFlight(Long id);
+        void deleteFlight(Long id);
 
-    void updateFlightStatus(Long id, String status);
+        void updateFlightStatus(Long id, String status);
 
-    List<Flight> searchFlightsOneWay(String departureAirport, String arrivalAirport, LocalDate departureDate,
-            Integer totalPassengers);
+        List<Flight> searchFlightsOneWay(String departureAirport, String arrivalAirport, LocalDate departureDate,
+                        Integer totalPassengers);
 
-    List<Flight> searchFlightsRoundTrip(String departureAirport, String arrivalAirport, LocalDate departureDate,
-            LocalDate returnDate, Integer totalPassengers);
+        List<Flight> searchFlightsRoundTrip(String departureAirport, String arrivalAirport, LocalDate departureDate,
+                        LocalDate returnDate, Integer totalPassengers);
+
+        List<Flight> findByDepartureAirportAndArrivalAirport(long departureAirportId, long arrivalAirportId);
 }

@@ -1,6 +1,9 @@
 package com.project.airplanebooking.service.impl;
 
 import com.project.airplanebooking.dto.request.RegisterRequest;
+import com.project.airplanebooking.exception.BadRequestException;
+import com.project.airplanebooking.exception.ConflictException;
+import com.project.airplanebooking.exception.EntityNotFoundException;
 import com.project.airplanebooking.model.User;
 import com.project.airplanebooking.repository.UserRepository;
 import com.project.airplanebooking.service.UserService;
@@ -23,15 +26,14 @@ public class UserServiceImpl implements UserService {
     @Override
     public User createUser(RegisterRequest registerRequest) {
         if (userRepository.findByUsername(registerRequest.getUsername()).isPresent()) {
-            throw new RuntimeException("Username already exists");
+            throw new ConflictException("User", "username", registerRequest.getUsername());
         }
 
         if (userRepository.findByEmail(registerRequest.getEmail()).isPresent()) {
-            throw new RuntimeException("Email already exists");
+            throw new ConflictException("User", "email", registerRequest.getEmail());
         }
-
         if (!registerRequest.getPassword().equals(registerRequest.getConfirmPassword())) {
-            throw new RuntimeException("Passwords do not match");
+            throw new BadRequestException("Passwords do not match");
         }
 
         User user = new User();
@@ -58,16 +60,16 @@ public class UserServiceImpl implements UserService {
     @Override
     public User updateUser(Long id, User updatedUser) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException(User.class, id));
 
         if (!user.getUsername().equals(updatedUser.getUsername()) &&
                 userRepository.findByUsername(updatedUser.getUsername()).isPresent()) {
-            throw new RuntimeException("Username already exists");
+            throw new ConflictException("User", "username", updatedUser.getUsername());
         }
 
         if (!user.getEmail().equals(updatedUser.getEmail()) &&
                 userRepository.findByEmail(updatedUser.getEmail()).isPresent()) {
-            throw new RuntimeException("Email already exists");
+            throw new ConflictException("User", "email", updatedUser.getEmail());
         }
 
         user.setFirstName(updatedUser.getFirstName());
@@ -109,7 +111,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public void deleteUser(Long id) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException(User.class, id));
 
         user.setStatus("INACTIVE");
         user.setIsActive(false);
@@ -119,19 +121,19 @@ public class UserServiceImpl implements UserService {
     @Override
     public User getUserById(Long id) {
         return userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException(User.class, id));
     }
 
     @Override
     public User getUserByUsername(String username) {
         return userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found with username: " + username));
+                .orElseThrow(() -> new EntityNotFoundException(User.class, "username", username));
     }
 
     @Override
     public User getUserByEmail(String email) {
         return userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
+                .orElseThrow(() -> new EntityNotFoundException(User.class, "email", email));
     }
 
     @Override
@@ -142,7 +144,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public void updateUserStatus(Long id, String status) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException(User.class, id));
 
         user.setStatus(status);
         user.setIsActive("ACTIVE".equals(status));

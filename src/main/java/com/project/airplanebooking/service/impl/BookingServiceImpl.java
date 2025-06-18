@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.project.airplanebooking.dto.request.BookingDTO;
+import com.project.airplanebooking.exception.BadRequestException;
 import com.project.airplanebooking.exception.ResourceNotFoundException;
 import com.project.airplanebooking.model.Booking;
 import com.project.airplanebooking.model.Flight;
@@ -25,37 +26,36 @@ import com.project.airplanebooking.service.BookingService;
 @Service
 public class BookingServiceImpl implements BookingService {
 
-    @Autowired
-    private BookingRepository bookingRepository;
+    private final BookingRepository bookingRepository;
+    private final FlightRepository flightRepository;
+    private final UserRepository userRepository;
+    private final PassengerRepository passengerRepository;
 
     @Autowired
-    private FlightRepository flightRepository;
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private PassengerRepository passengerRepository;
+    public BookingServiceImpl(
+            BookingRepository bookingRepository,
+            FlightRepository flightRepository,
+            UserRepository userRepository,
+            PassengerRepository passengerRepository) {
+        this.bookingRepository = bookingRepository;
+        this.flightRepository = flightRepository;
+        this.userRepository = userRepository;
+        this.passengerRepository = passengerRepository;
+    }
 
     @Override
     @Transactional
     public Booking createBooking(BookingDTO bookingDTO) {
-        // Lấy thông tin flight
-        Flight flight = flightRepository.findById(bookingDTO.getFlightId())
-                .orElseThrow(
-                        () -> new ResourceNotFoundException("Flight not found with id: " + bookingDTO.getFlightId()));
-
         // Lấy thông tin user
         User user = userRepository.findById(bookingDTO.getUserId())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + bookingDTO.getUserId()));
 
         // Tạo booking mới
         Booking booking = new Booking();
-        booking.setFlight(flight);
         booking.setUser(user);
         booking.setBookingReference(generateBookingReference());
         booking.setBookingDate(LocalDateTime.now());
-        booking.setTotalPrice(calculateTotalPrice(flight, bookingDTO.getPassengerCount()));
+        booking.setTotalPrice(bookingDTO.getTotalPrice());
         booking.setStatus("PENDING");
         booking.setPassengerCount(bookingDTO.getPassengerCount());
         booking.setTripType(bookingDTO.getTripType());
@@ -80,7 +80,6 @@ public class BookingServiceImpl implements BookingService {
 
         // Tạo booking mới
         Booking booking = new Booking();
-        booking.setFlight(flight);
         booking.setUser(user);
         booking.setBookingReference(generateBookingReference());
         booking.setBookingDate(LocalDateTime.now());
@@ -118,11 +117,7 @@ public class BookingServiceImpl implements BookingService {
                     passenger.setLastName(passengerDTO.getLastName());
                     passenger.setDateOfBirth(passengerDTO.getBirthDate());
                     passenger.setGender(passengerDTO.getGender());
-                    passenger.setNationality(passengerDTO.getNationality());
-                    passenger.setPassportNumber(passengerDTO.getPassportNumber());
                     passenger.setPersonalId(passengerDTO.getPersonalId());
-                    passenger.setEmail("");
-                    passenger.setPhone("");
                     passenger.setBooking(booking);
                     return passenger;
                 })
@@ -147,11 +142,6 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public List<Booking> getBookingsByUser(User user) {
         return bookingRepository.findByUser(user);
-    }
-
-    @Override
-    public List<Booking> getBookingsByFlight(Flight flight) {
-        return bookingRepository.findByFlight(flight);
     }
 
     @Override

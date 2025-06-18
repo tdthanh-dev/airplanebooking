@@ -27,9 +27,6 @@ public interface BookingService {
     // Lấy danh sách booking của user
     List<Booking> getBookingsByUser(User user);
 
-    // Lấy danh sách booking của flight
-    List<Booking> getBookingsByFlight(Flight flight);
-
     // Lấy danh sách booking theo trạng thái
     List<Booking> getBookingsByStatus(String status);
 

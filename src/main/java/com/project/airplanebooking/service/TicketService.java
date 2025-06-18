@@ -18,24 +18,4 @@ public interface TicketService {
     Ticket getTicketById(Long id);
 
     List<Ticket> getAllTickets();
-
-    List<Ticket> getTicketsByBooking(Booking booking);
-
-    List<Ticket> getTicketsByFlight(Flight flight);
-
-    List<Ticket> getTicketsByPassenger(Passenger passenger);
-
-    void cancelTicket(Long id);
-
-    Ticket getTicketByTicketNumber(String ticketNumber);
-
-    Ticket createTicket(Booking booking, Passenger passenger, String seatNumber);
-
-    List<Ticket> generateTicketsForBooking(Long bookingId);
-
-    List<Ticket> getTicketsByBookingId(Long bookingId);
-
-    Ticket updateTicketStatus(Long id, String status);
-
-    boolean cancelTicketWithResult(Long id);
 }

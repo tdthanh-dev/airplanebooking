@@ -4,6 +4,9 @@ import com.project.airplanebooking.dto.request.LoginRequest;
 import com.project.airplanebooking.dto.request.RegisterRequest;
 import com.project.airplanebooking.dto.response.RegisterResponse;
 import com.project.airplanebooking.dto.response.UserResponse;
+import com.project.airplanebooking.exception.ConflictException;
+import com.project.airplanebooking.exception.ResourceNotFoundException;
+import com.project.airplanebooking.exception.ValidationException;
 import com.project.airplanebooking.model.User;
 import com.project.airplanebooking.repository.UserRepository;
 import com.project.airplanebooking.security.JwtTokenProvider;
@@ -42,9 +45,8 @@ public class AuthService {
 
         String token = tokenProvider.generateToken(authentication);
         String refreshToken = tokenProvider.generateRefreshToken(authentication);
-
         User user = userRepository.findByUsername(loginRequest.getUsername())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User", "username", loginRequest.getUsername()));
         user.setLastLogin(LocalDateTime.now());
         userRepository.save(user);
 
@@ -63,15 +65,15 @@ public class AuthService {
 
     public RegisterResponse register(RegisterRequest registerRequest) {
         if (userRepository.existsByUsername(registerRequest.getUsername())) {
-            throw new RuntimeException("Username is already taken!");
+            throw new ConflictException("User", "username", registerRequest.getUsername());
         }
 
         if (userRepository.existsByEmail(registerRequest.getEmail())) {
-            throw new RuntimeException("Email is already in use!");
+            throw new ConflictException("User", "email", registerRequest.getEmail());
         }
 
         if (!registerRequest.getPassword().equals(registerRequest.getConfirmPassword())) {
-            throw new RuntimeException("Password and confirm password do not match!");
+            throw new ValidationException("Password and confirm password do not match!");
         }
 
         User user = new User();

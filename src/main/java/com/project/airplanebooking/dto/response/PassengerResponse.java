@@ -16,8 +16,6 @@ public class PassengerResponse {
     private String firstName;
     private String lastName;
     private String idNumber;
-    private String passportNumber;
-    private String nationality;
     private LocalDateTime dateOfBirth;
     private String gender;
     private LocalDateTime createdAt;
@@ -28,8 +26,6 @@ public class PassengerResponse {
         this.firstName = passenger.getFirstName();
         this.lastName = passenger.getLastName();
         this.idNumber = passenger.getPersonalId();
-        this.passportNumber = passenger.getPassportNumber();
-        this.nationality = passenger.getNationality();
         this.gender = passenger.getGender();
         this.dateOfBirth = passenger.getDateOfBirth() != null ? passenger.getDateOfBirth().atStartOfDay() : null;
         this.createdAt = passenger.getCreatedAt();

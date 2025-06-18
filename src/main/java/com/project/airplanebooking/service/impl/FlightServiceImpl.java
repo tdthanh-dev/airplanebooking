@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.project.airplanebooking.dto.request.FlightDTO;
+import com.project.airplanebooking.exception.EntityNotFoundException;
+import com.project.airplanebooking.exception.ResourceNotFoundException;
 import com.project.airplanebooking.model.Airline;
 import com.project.airplanebooking.model.Airport;
 import com.project.airplanebooking.model.Flight;
@@ -19,24 +21,31 @@ import com.project.airplanebooking.service.FlightService;
 @Service
 public class FlightServiceImpl implements FlightService {
 
-    @Autowired
-    private FlightRepository flightRepository;
+    private final FlightRepository flightRepository;
+    private final AirportRepository airportRepository;
+    private final AirlineRepository airlineRepository;
 
     @Autowired
-    private AirportRepository airportRepository;
-
-    @Autowired
-    private AirlineRepository airlineRepository;
+    public FlightServiceImpl(
+            FlightRepository flightRepository,
+            AirportRepository airportRepository,
+            AirlineRepository airlineRepository) {
+        this.flightRepository = flightRepository;
+        this.airportRepository = airportRepository;
+        this.airlineRepository = airlineRepository;
+    }
 
     @Override
     public Flight createFlight(FlightDTO flightDTO) {
         Flight flight = new Flight();
         Airport departureAirport = airportRepository.findByIataCode(flightDTO.getDepartureAirportCode())
-                .orElseThrow(() -> new RuntimeException("Departure airport not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Airport", "IATA code",
+                        flightDTO.getDepartureAirportCode()));
         Airport arrivalAirport = airportRepository.findByIataCode(flightDTO.getArrivalAirportCode())
-                .orElseThrow(() -> new RuntimeException("Arrival airport not found"));
+                .orElseThrow(
+                        () -> new ResourceNotFoundException("Airport", "IATA code", flightDTO.getArrivalAirportCode()));
         Airline airline = airlineRepository.findByIataCode(flightDTO.getAirlineCode())
-                .orElseThrow(() -> new RuntimeException("Airline not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Airline", "IATA code", flightDTO.getAirlineCode()));
 
         flight.setFlightNo(flightDTO.getFlightNo());
         flight.setDepartureAirport(departureAirport);
@@ -63,13 +72,13 @@ public class FlightServiceImpl implements FlightService {
     @Override
     public Flight getFlightById(Long id) {
         return flightRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Flight not found"));
+                .orElseThrow(() -> new EntityNotFoundException(Flight.class, id));
     }
 
     @Override
     public Flight getFlightByFlightNumber(String flightNumber) {
         return flightRepository.findByFlightNo(flightNumber)
-                .orElseThrow(() -> new RuntimeException("Flight not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Flight", "flight number", flightNumber));
     }
 
     @Override
@@ -84,7 +93,7 @@ public class FlightServiceImpl implements FlightService {
     @Override
     public List<Flight> getFlightsByAirline(String airlineCode) {
         Airline airline = airlineRepository.findByIataCode(airlineCode)
-                .orElseThrow(() -> new RuntimeException("Airline not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Airline", "IATA code", airlineCode));
         return flightRepository.findByAirline(airline);
     }
 
@@ -95,22 +104,24 @@ public class FlightServiceImpl implements FlightService {
         if (flightDTO.getFlightNo() != null) {
             flight.setFlightNo(flightDTO.getFlightNo());
         }
-
         if (flightDTO.getDepartureAirportCode() != null) {
             Airport departureAirport = airportRepository.findByIataCode(flightDTO.getDepartureAirportCode())
-                    .orElseThrow(() -> new RuntimeException("Departure airport not found"));
+                    .orElseThrow(() -> new ResourceNotFoundException("Airport", "IATA code",
+                            flightDTO.getDepartureAirportCode()));
             flight.setDepartureAirport(departureAirport);
         }
 
         if (flightDTO.getArrivalAirportCode() != null) {
             Airport arrivalAirport = airportRepository.findByIataCode(flightDTO.getArrivalAirportCode())
-                    .orElseThrow(() -> new RuntimeException("Arrival airport not found"));
+                    .orElseThrow(() -> new ResourceNotFoundException("Airport", "IATA code",
+                            flightDTO.getArrivalAirportCode()));
             flight.setArrivalAirport(arrivalAirport);
         }
 
         if (flightDTO.getAirlineCode() != null) {
             Airline airline = airlineRepository.findByIataCode(flightDTO.getAirlineCode())
-                    .orElseThrow(() -> new RuntimeException("Airline not found"));
+                    .orElseThrow(
+                            () -> new ResourceNotFoundException("Airline", "IATA code", flightDTO.getAirlineCode()));
             flight.setAirline(airline);
         }
 
@@ -172,13 +183,9 @@ public class FlightServiceImpl implements FlightService {
                 .findByDepartureAirportIataCodeAndArrivalAirportIataCodeAndDepartureTimeBetween(
                         departureAirport, arrivalAirport, startOfDay, endOfDay);
 
-        for (Flight flight : listFlights) {
-            if (totalPassengers > flight.getAvailableSeats()) {
-                listFlights.remove(flight);
-            }
-        }
-
-        return listFlights;
+        return listFlights.stream()
+                .filter(flight -> totalPassengers <= flight.getAvailableSeats())
+                .toList();
     }
 
     @Override
@@ -191,12 +198,17 @@ public class FlightServiceImpl implements FlightService {
                 .findByDepartureAirportIataCodeAndArrivalAirportIataCodeAndDepartureTimeBetween(
                         departureAirport, arrivalAirport, startOfDay, endOfDay);
 
-        for (Flight flight : listFlights) {
-            if (totalPassengers > flight.getAvailableSeats()) {
-                listFlights.remove(flight);
-            }
-        }
+        return listFlights.stream()
+                .filter(flight -> totalPassengers <= flight.getAvailableSeats())
+                .toList();
+    }
 
-        return listFlights;
+    @Override
+    public List<Flight> findByDepartureAirportAndArrivalAirport(long departureAirportId, long arrivalAirportId) {
+        Airport departureAirport = airportRepository.findById(departureAirportId)
+                .orElseThrow(() -> new EntityNotFoundException(Airport.class, departureAirportId));
+        Airport arrivalAirport = airportRepository.findById(arrivalAirportId)
+                .orElseThrow(() -> new EntityNotFoundException(Airport.class, arrivalAirportId));
+        return flightRepository.findByDepartureAirportAndArrivalAirport(departureAirport, arrivalAirport);
     }
 }

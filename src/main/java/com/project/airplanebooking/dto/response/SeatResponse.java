@@ -15,20 +15,20 @@ import lombok.NoArgsConstructor;
 public class SeatResponse {
     private Long id;
     private String seatNumber;
-    private AirplaneResponse airplane;
+    private Long airplaneId;
     private String seatClass;
     private String status;
-    private BigDecimal extraPrice;
+    private BigDecimal price;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
     public SeatResponse(Seat seat) {
         this.id = seat.getId();
         this.seatNumber = seat.getSeatNumber();
-        this.airplane = new AirplaneResponse(seat.getAirplane());
+        this.airplaneId = seat.getAirplane().getId();
         this.seatClass = seat.getSeatType();
-        this.status = seat.getIsAvailable() ? "AVAILABLE" : "OCCUPIED";
-        this.extraPrice = BigDecimal.valueOf(seat.getPrice());
+        this.status = seat.getStatus();
+        this.price = BigDecimal.valueOf(seat.getPrice());
         this.createdAt = seat.getCreatedAt();
         this.updatedAt = seat.getUpdatedAt();
     }

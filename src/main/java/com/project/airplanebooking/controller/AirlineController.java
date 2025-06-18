@@ -27,8 +27,12 @@ import jakarta.validation.Valid;
 @RequestMapping("api/v1/airlines") // localhost:8080/api/v1/airlines
 public class AirlineController {
 
+    private final AirlineServiceImpl airlineServiceImpl;
+
     @Autowired
-    private AirlineServiceImpl airlineServiceImpl;
+    public AirlineController(AirlineServiceImpl airlineServiceImpl) {
+        this.airlineServiceImpl = airlineServiceImpl;
+    }
 
     @PostMapping("/")
     public ResponseEntity<?> createAirline(@Valid @RequestBody AirlineDTO airlineDTO

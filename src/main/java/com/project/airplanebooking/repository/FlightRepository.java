@@ -13,19 +13,23 @@ import com.project.airplanebooking.model.Flight;
 
 @Repository
 public interface FlightRepository extends JpaRepository<Flight, Long> {
-    Optional<Flight> findByFlightNo(String flightNo);
+        Optional<Flight> findByFlightNo(String flightNo);
 
-    List<Flight> findByDepartureAirport(Airport departureAirport);
+        List<Flight> findByDepartureAirport(Airport departureAirport);
 
-    List<Flight> findByArrivalAirport(Airport arrivalAirport);
+        List<Flight> findByArrivalAirport(Airport arrivalAirport);
 
-    List<Flight> findByAirline(Airline airline);
+        List<Flight> findByAirline(Airline airline);
 
-    List<Flight> findByDepartureTimeBetween(LocalDateTime start, LocalDateTime end);
+        List<Flight> findByDepartureAirportAndArrivalAirport(Airport departureAirport, Airport arrivalAirport);
 
-    List<Flight> findByDepartureAirportAndArrivalAirportAndDepartureTimeGreaterThanEqual(
-            Airport departureAirport, Airport arrivalAirport, LocalDateTime departureTime);
+        List<Flight> findByDepartureTimeBetween(LocalDateTime start, LocalDateTime end);
 
-    List<Flight> findByDepartureAirportIataCodeAndArrivalAirportIataCodeAndDepartureTimeBetween(
-            String departureAirportCode, String arrivalAirportCode, LocalDateTime startTime, LocalDateTime endTime);
+        List<Flight> findByDepartureAirportAndArrivalAirportAndDepartureTimeGreaterThanEqual(
+                        Airport departureAirport, Airport arrivalAirport, LocalDateTime departureTime);
+
+        List<Flight> findByDepartureAirportIataCodeAndArrivalAirportIataCodeAndDepartureTimeBetween(
+                        String departureAirportCode, String arrivalAirportCode, LocalDateTime startTime,
+                        LocalDateTime endTime);
+
 }

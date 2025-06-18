@@ -22,14 +22,19 @@ import jakarta.validation.Valid;
 @RequestMapping("api/v1/bookings")
 public class BookingController {
 
-    @Autowired
-    private BookingServiceImpl bookingServiceImpl;
+    private final BookingServiceImpl bookingServiceImpl;
+    private final UserServiceImpl userServiceImpl;
+    private final FlightServiceImpl flightServiceImpl;
 
     @Autowired
-    private UserServiceImpl userServiceImpl;
-
-    @Autowired
-    private FlightServiceImpl flightServiceImpl;
+    public BookingController(
+            BookingServiceImpl bookingServiceImpl,
+            UserServiceImpl userServiceImpl,
+            FlightServiceImpl flightServiceImpl) {
+        this.bookingServiceImpl = bookingServiceImpl;
+        this.userServiceImpl = userServiceImpl;
+        this.flightServiceImpl = flightServiceImpl;
+    }
 
     @PostMapping("/")
     public ResponseEntity<?> createBooking(@Valid @RequestBody BookingDTO bookingDTO) {
@@ -82,20 +87,6 @@ public class BookingController {
     public ResponseEntity<?> getBookingsByStatus(@PathVariable String status) {
         try {
             List<Booking> bookings = bookingServiceImpl.getBookingsByStatus(status);
-            List<BookingResponse> responseList = bookings.stream()
-                    .map(BookingResponse::new)
-                    .collect(Collectors.toList());
-            return ResponseEntity.ok(responseList);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        }
-    }
-
-    @GetMapping("/flight/{flightId}")
-    public ResponseEntity<?> getBookingsByFlight(@PathVariable Long flightId) {
-        try {
-            Flight flight = flightServiceImpl.getFlightById(flightId);
-            List<Booking> bookings = bookingServiceImpl.getBookingsByFlight(flight);
             List<BookingResponse> responseList = bookings.stream()
                     .map(BookingResponse::new)
                     .collect(Collectors.toList());

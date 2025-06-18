@@ -11,9 +11,6 @@ import lombok.Data;
 @Data
 public class BookingDTO {
 
-    @NotNull(message = "Flight ID is required")
-    private Long flightId;
-
     @NotNull(message = "User ID is required")
     private Long userId;
 

@@ -17,5 +17,5 @@ public interface PassengerRepository extends JpaRepository<Passenger, Long> {
     @Query("SELECT p FROM Passenger p WHERE p.lastName LIKE %:lastName% OR p.firstName LIKE %:lastName%")
     List<Passenger> findByLastNameContaining(@Param("lastName") String lastName);
 
-    List<Passenger> findByPassportNumber(String passportNumber);
+    List<Passenger> findByPersonalId(String personalId);
 }

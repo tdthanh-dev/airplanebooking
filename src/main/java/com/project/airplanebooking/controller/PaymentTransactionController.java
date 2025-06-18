@@ -21,11 +21,16 @@ import jakarta.validation.Valid;
 @RequestMapping("api/v1/payment-transactions")
 public class PaymentTransactionController {
 
-    @Autowired
-    private PaymentTransactionServiceImpl paymentTransactionServiceImpl;
+    private final PaymentTransactionServiceImpl paymentTransactionServiceImpl;
+    private final BookingServiceImpl bookingServiceImpl;
 
     @Autowired
-    private BookingServiceImpl bookingServiceImpl;
+    public PaymentTransactionController(
+            PaymentTransactionServiceImpl paymentTransactionServiceImpl,
+            BookingServiceImpl bookingServiceImpl) {
+        this.paymentTransactionServiceImpl = paymentTransactionServiceImpl;
+        this.bookingServiceImpl = bookingServiceImpl;
+    }
 
     @PostMapping("/")
     public ResponseEntity<?> createPaymentTransaction(@Valid @RequestBody PaymentTransactionDTO paymentTransactionDTO) {

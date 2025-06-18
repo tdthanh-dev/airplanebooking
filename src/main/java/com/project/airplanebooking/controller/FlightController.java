@@ -22,8 +22,12 @@ import jakarta.validation.Valid;
 @RequestMapping("api/v1/flights")
 public class FlightController {
 
+    private final FlightServiceImpl flightServiceImpl;
+
     @Autowired
-    private FlightServiceImpl flightServiceImpl;
+    public FlightController(FlightServiceImpl flightServiceImpl) {
+        this.flightServiceImpl = flightServiceImpl;
+    }
 
     @PostMapping("/")
     public ResponseEntity<?> createFlight(@Valid @RequestBody FlightDTO flightDTO) {
@@ -243,4 +247,25 @@ public class FlightController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
+
+    @GetMapping("/search/departure-arrival")
+    public ResponseEntity<?> searchFlightsByDepartureAndArrival(
+            @RequestParam long departureAirportId,
+            @RequestParam long arrivalAirportId) {
+        try {
+            List<Flight> flights = flightServiceImpl.findByDepartureAirportAndArrivalAirport(departureAirportId,
+                    arrivalAirportId);
+            if (flights.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body("No flights found for the specified criteria");
+            }
+            List<FlightResponse> responseList = flights.stream()
+                    .map(FlightResponse::new)
+                    .collect(Collectors.toList());
+            return ResponseEntity.ok(responseList);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
 }

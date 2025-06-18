@@ -3,7 +3,6 @@ package com.project.airplanebooking.service;
 import java.util.List;
 
 import com.project.airplanebooking.dto.request.PassengerDTO;
-import com.project.airplanebooking.model.Booking;
 import com.project.airplanebooking.model.Passenger;
 
 public interface PassengerService {
@@ -15,13 +14,6 @@ public interface PassengerService {
 
     Passenger getPassengerById(Long id);
 
-    List<Passenger> getPassengersByBooking(Booking booking);
-
-    List<Passenger> getPassengersByLastName(String lastName);
-
-    List<Passenger> getPassengersByPassportNumber(String passportNumber);
-
     List<Passenger> getAllPassengers();
 
-    List<Passenger> getPassengersByBookingId(Long bookingId);
 }

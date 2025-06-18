@@ -1,6 +1,7 @@
 package com.project.airplanebooking.service.impl;
 
 import com.project.airplanebooking.dto.request.PaymentTransactionDTO;
+import com.project.airplanebooking.exception.EntityNotFoundException;
 import com.project.airplanebooking.model.PaymentTransaction;
 import com.project.airplanebooking.model.Booking;
 import com.project.airplanebooking.model.PaymentMethod;
@@ -31,12 +32,11 @@ public class PaymentTransactionServiceImpl implements PaymentTransactionService 
     @Override
     public PaymentTransaction createPaymentTransaction(PaymentTransactionDTO paymentTransactionDTO) {
         Booking booking = bookingRepository.findById(paymentTransactionDTO.getBookingId())
-                .orElseThrow(() -> new RuntimeException(
-                        "Booking not found with id: " + paymentTransactionDTO.getBookingId()));
+                .orElseThrow(() -> new EntityNotFoundException(Booking.class, paymentTransactionDTO.getBookingId()));
 
         PaymentMethod paymentMethod = paymentMethodRepository.findById(paymentTransactionDTO.getPaymentMethodId())
-                .orElseThrow(() -> new RuntimeException(
-                        "Payment method not found with id: " + paymentTransactionDTO.getPaymentMethodId()));
+                .orElseThrow(() -> new EntityNotFoundException(PaymentMethod.class,
+                        paymentTransactionDTO.getPaymentMethodId()));
 
         PaymentTransaction paymentTransaction = new PaymentTransaction();
         paymentTransaction.setBooking(booking);
@@ -52,19 +52,19 @@ public class PaymentTransactionServiceImpl implements PaymentTransactionService 
     @Override
     public PaymentTransaction updatePaymentTransaction(Long id, PaymentTransactionDTO paymentTransactionDTO) {
         PaymentTransaction paymentTransaction = paymentTransactionRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Payment transaction not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException(PaymentTransaction.class, id));
 
         if (paymentTransactionDTO.getBookingId() != null) {
             Booking booking = bookingRepository.findById(paymentTransactionDTO.getBookingId())
-                    .orElseThrow(() -> new RuntimeException(
-                            "Booking not found with id: " + paymentTransactionDTO.getBookingId()));
+                    .orElseThrow(
+                            () -> new EntityNotFoundException(Booking.class, paymentTransactionDTO.getBookingId()));
             paymentTransaction.setBooking(booking);
         }
 
         if (paymentTransactionDTO.getPaymentMethodId() != null) {
             PaymentMethod paymentMethod = paymentMethodRepository.findById(paymentTransactionDTO.getPaymentMethodId())
-                    .orElseThrow(() -> new RuntimeException(
-                            "Payment method not found with id: " + paymentTransactionDTO.getPaymentMethodId()));
+                    .orElseThrow(() -> new EntityNotFoundException(PaymentMethod.class,
+                            paymentTransactionDTO.getPaymentMethodId()));
             paymentTransaction.setPaymentMethod(paymentMethod);
         }
 
@@ -82,7 +82,7 @@ public class PaymentTransactionServiceImpl implements PaymentTransactionService 
     @Override
     public void deletePaymentTransaction(Long id) {
         PaymentTransaction paymentTransaction = paymentTransactionRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Payment transaction not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException(PaymentTransaction.class, id));
 
         paymentTransactionRepository.delete(paymentTransaction);
     }
@@ -90,7 +90,7 @@ public class PaymentTransactionServiceImpl implements PaymentTransactionService 
     @Override
     public PaymentTransaction getPaymentTransactionById(Long id) {
         return paymentTransactionRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Payment transaction not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException(PaymentTransaction.class, id));
     }
 
     @Override
@@ -111,7 +111,7 @@ public class PaymentTransactionServiceImpl implements PaymentTransactionService 
     @Override
     public void updatePaymentStatus(Long id, String status) {
         PaymentTransaction paymentTransaction = paymentTransactionRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Payment transaction not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException(PaymentTransaction.class, id));
 
         paymentTransaction.setStatus(status);
 

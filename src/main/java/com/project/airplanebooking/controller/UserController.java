@@ -20,8 +20,12 @@ import jakarta.validation.Valid;
 @RequestMapping("api/v1/users")
 public class UserController {
 
+    private final UserServiceImpl userServiceImpl;
+
     @Autowired
-    private UserServiceImpl userServiceImpl;
+    public UserController(UserServiceImpl userServiceImpl) {
+        this.userServiceImpl = userServiceImpl;
+    }
 
     @PostMapping("/")
     public ResponseEntity<?> createUser(@Valid @RequestBody RegisterRequest registerRequest) {

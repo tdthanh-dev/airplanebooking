@@ -19,8 +19,12 @@ import jakarta.validation.Valid;
 @RequestMapping("api/v1/airports")
 public class AirportController {
 
+    private final AirportServiceImpl airportServiceImpl;
+
     @Autowired
-    private AirportServiceImpl airportServiceImpl;
+    public AirportController(AirportServiceImpl airportServiceImpl) {
+        this.airportServiceImpl = airportServiceImpl;
+    }
 
     @PostMapping("/")
     public ResponseEntity<?> createAirport(@Valid @RequestBody AirportDTO airportDTO) {

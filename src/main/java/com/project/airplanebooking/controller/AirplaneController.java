@@ -19,8 +19,12 @@ import jakarta.validation.Valid;
 @RequestMapping("api/v1/airplanes")
 public class AirplaneController {
 
+    private final AirplaneServiceImpl airplaneServiceImpl;
+
     @Autowired
-    private AirplaneServiceImpl airplaneServiceImpl;
+    public AirplaneController(AirplaneServiceImpl airplaneServiceImpl) {
+        this.airplaneServiceImpl = airplaneServiceImpl;
+    }
 
     @PostMapping("/")
     public ResponseEntity<?> createAirplane(@Valid @RequestBody AirplaneDTO airplaneDTO) {

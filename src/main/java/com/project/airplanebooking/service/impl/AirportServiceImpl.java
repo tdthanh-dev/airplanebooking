@@ -1,6 +1,8 @@
 package com.project.airplanebooking.service.impl;
 
 import com.project.airplanebooking.dto.request.AirportDTO;
+import com.project.airplanebooking.exception.EntityNotFoundException;
+import com.project.airplanebooking.exception.ResourceNotFoundException;
 import com.project.airplanebooking.model.Airport;
 import com.project.airplanebooking.repository.AirportRepository;
 import com.project.airplanebooking.service.AirportService;
@@ -33,7 +35,7 @@ public class AirportServiceImpl implements AirportService {
     @Override
     public Airport updateAirport(Long id, AirportDTO airportDTO) {
         Airport airport = airportRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Airport not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException(Airport.class, id));
 
         airport.setName(airportDTO.getName());
         airport.setIataCode(airportDTO.getIataCode());
@@ -48,7 +50,7 @@ public class AirportServiceImpl implements AirportService {
     @Override
     public void deleteAirport(Long id) {
         Airport airport = airportRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Airport not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException(Airport.class, id));
 
         airportRepository.delete(airport);
     }
@@ -56,13 +58,13 @@ public class AirportServiceImpl implements AirportService {
     @Override
     public Airport getAirportById(Long id) {
         return airportRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Airport not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException(Airport.class, id));
     }
 
     @Override
     public Airport getAirportByCode(String code) {
         return airportRepository.findByIataCode(code)
-                .orElseThrow(() -> new RuntimeException("Airport not found with code: " + code));
+                .orElseThrow(() -> new ResourceNotFoundException("Airport", "IATA code", code));
     }
 
     @Override
