@@ -268,4 +268,13 @@ public class FlightController {
         }
     }
 
+    @GetMapping("/{id}/available-seats")
+    public ResponseEntity<?> getAvailableSeats(@PathVariable Long id) {
+        try {
+            int availableSeats = flightServiceImpl.getAvailableSeats(id);
+            return ResponseEntity.ok(availableSeats);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
 }

@@ -236,4 +236,9 @@ public class FlightServiceImpl implements FlightService {
                 .orElseThrow(() -> new EntityNotFoundException(Airport.class, arrivalAirportId));
         return flightRepository.findByDepartureAirportAndArrivalAirport(departureAirport, arrivalAirport);
     }
+
+    @Override
+    public int getAvailableSeats(Long flightId) {
+        return seatFlightService.updateFlightAvailableSeats(flightId);
+    }
 }

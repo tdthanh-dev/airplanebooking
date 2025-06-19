@@ -33,4 +33,6 @@ public interface FlightService {
                         LocalDate returnDate, Integer totalPassengers);
 
         List<Flight> findByDepartureAirportAndArrivalAirport(long departureAirportId, long arrivalAirportId);
+
+        int getAvailableSeats(Long flightId);
 }
