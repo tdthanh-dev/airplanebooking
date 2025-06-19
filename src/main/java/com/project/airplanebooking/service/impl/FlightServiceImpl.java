@@ -3,9 +3,12 @@ package com.project.airplanebooking.service.impl;
 import java.time.LocalDateTime;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.ArrayList;
+import java.time.Duration;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.project.airplanebooking.dto.request.FlightDTO;
 import com.project.airplanebooking.exception.EntityNotFoundException;
@@ -13,10 +16,13 @@ import com.project.airplanebooking.exception.ResourceNotFoundException;
 import com.project.airplanebooking.model.Airline;
 import com.project.airplanebooking.model.Airport;
 import com.project.airplanebooking.model.Flight;
+import com.project.airplanebooking.model.SeatFlight;
 import com.project.airplanebooking.repository.AirlineRepository;
 import com.project.airplanebooking.repository.AirportRepository;
 import com.project.airplanebooking.repository.FlightRepository;
+import com.project.airplanebooking.repository.SeatFlightRepository;
 import com.project.airplanebooking.service.FlightService;
+import com.project.airplanebooking.service.SeatFlightService;
 
 @Service
 public class FlightServiceImpl implements FlightService {
@@ -24,15 +30,21 @@ public class FlightServiceImpl implements FlightService {
     private final FlightRepository flightRepository;
     private final AirportRepository airportRepository;
     private final AirlineRepository airlineRepository;
+    private final SeatFlightRepository seatFlightRepository;
+    private final SeatFlightService seatFlightService;
 
     @Autowired
     public FlightServiceImpl(
             FlightRepository flightRepository,
             AirportRepository airportRepository,
-            AirlineRepository airlineRepository) {
+            AirlineRepository airlineRepository,
+            SeatFlightRepository seatFlightRepository,
+            SeatFlightService seatFlightService) {
         this.flightRepository = flightRepository;
         this.airportRepository = airportRepository;
         this.airlineRepository = airlineRepository;
+        this.seatFlightRepository = seatFlightRepository;
+        this.seatFlightService = seatFlightService;
     }
 
     @Override
@@ -82,12 +94,25 @@ public class FlightServiceImpl implements FlightService {
     }
 
     @Override
+    @Transactional
     public List<Flight> searchFlights(String departureAirport, String arrivalAirport, LocalDate departureDate) {
         LocalDateTime startOfDay = departureDate.atStartOfDay();
         LocalDateTime endOfDay = departureDate.atTime(23, 59, 59);
 
-        return flightRepository.findByDepartureAirportIataCodeAndArrivalAirportIataCodeAndDepartureTimeBetween(
-                departureAirport, arrivalAirport, startOfDay, endOfDay);
+        List<Flight> flights = flightRepository
+                .findByDepartureAirportIataCodeAndArrivalAirportIataCodeAndDepartureTimeBetween(
+                        departureAirport, arrivalAirport, startOfDay, endOfDay);
+
+        List<Flight> availableFlights = new ArrayList<>();
+        for (Flight flight : flights) {
+            int availableCount = seatFlightService.updateFlightAvailableSeats(flight.getId());
+
+            if (availableCount > 0) {
+                availableFlights.add(flight);
+            }
+        }
+
+        return availableFlights;
     }
 
     @Override

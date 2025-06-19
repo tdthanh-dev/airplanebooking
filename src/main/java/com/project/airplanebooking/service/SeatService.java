@@ -18,7 +18,5 @@ public interface SeatService {
 
     void checkAndUpdateExpiredHoldSeats();
 
-    void changeSeatsToHold(List<Long> seatIds, Long flightId);
-
     List<Seat> findSeatByAirplane(Long airplaneId);
 }

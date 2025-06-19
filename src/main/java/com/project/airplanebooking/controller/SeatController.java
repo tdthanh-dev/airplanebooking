@@ -79,16 +79,6 @@ public class SeatController {
         }
     }
 
-    @PutMapping("/hold")
-    public ResponseEntity<?> changeSeatsToHold(@RequestBody List<Long> seatIds, @RequestParam Long flightId) {
-        try {
-            seatServiceImpl.changeSeatsToHold(seatIds, flightId);
-            return ResponseEntity.ok("Seats changed to hold successfully");
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        }
-    }
-
     @GetMapping("/airplane/{airplaneId}")
     public ResponseEntity<?> getSeatByAirplane(@PathVariable Long airplaneId) {
         try {

@@ -134,24 +134,10 @@ public class SeatServiceImpl implements SeatService {
     }
 
     @Override
-    public void changeSeatsToHold(List<Long> seatIds, Long flightId) {
-        Flight flight = flightRepository.findById(flightId)
-                .orElseThrow(() -> new EntityNotFoundException(Flight.class, flightId));
-        for (Long seatId : seatIds) {
-            Seat seat = getSeatById(seatId);
-            seat.setStatus("HOLD");
-            seat.setDateHold(LocalDateTime.now());
-            flight.setAvailableSeats(flight.getAvailableSeats() - 1);
-            seatRepository.save(seat);
-            flightRepository.save(flight);
-        }
-    }
-
-    @Override
     public List<Seat> findSeatByAirplane(Long airplaneId) {
         Airplane airplane = airplaneRepository.findById(airplaneId)
                 .orElseThrow(() -> new EntityNotFoundException(Airplane.class, airplaneId));
-        return seatRepository.findByAirplane(airplane);
+        List<Seat> seats = seatRepository.findByAirplane(airplane);
+        return seats;
     }
-
 }
