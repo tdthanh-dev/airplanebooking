@@ -18,9 +18,6 @@ public class PassengerDTO {
     @NotBlank(message = "Last name is required")
     private String lastName;
 
-    @NotNull(message = "Personal ID is required")
-    private String personalId;
-
     @NotNull(message = "Birth date is required")
     @Past(message = "Birth date must be in the past")
     private LocalDate birthDate;
@@ -28,9 +25,7 @@ public class PassengerDTO {
     @NotBlank(message = "Gender is required")
     private String gender;
 
-    @NotBlank(message = "Nationality is required")
-    private String nationality;
-
+    private String personalId;
     private String passportNumber;
 
     @Email(message = "Email should be valid")

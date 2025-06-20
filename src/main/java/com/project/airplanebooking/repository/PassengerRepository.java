@@ -12,7 +12,8 @@ import com.project.airplanebooking.model.Passenger;
 
 @Repository
 public interface PassengerRepository extends JpaRepository<Passenger, Long> {
-    List<Passenger> findByBooking(Booking booking);
+    @Query("SELECT p FROM Passenger p JOIN p.bookings b WHERE b = :booking")
+    List<Passenger> findByBooking(@Param("booking") Booking booking);
 
     @Query("SELECT p FROM Passenger p WHERE p.lastName LIKE %:lastName% OR p.firstName LIKE %:lastName%")
     List<Passenger> findByLastNameContaining(@Param("lastName") String lastName);

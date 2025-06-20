@@ -31,6 +31,10 @@ public class SeatFlight extends BaseEntity {
     @JoinColumn(name = "flight_id", nullable = false)
     private Flight flight;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "booking_id")
+    private Booking booking;
+
     @Column(name = "seat_number", nullable = false, length = 50)
     private String seatNumber;
 

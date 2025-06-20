@@ -31,6 +31,12 @@ public class BookingDTO {
     @NotNull(message = "Passengers are required")
     private List<PassengerDTO> passengers;
 
+    @NotNull(message = "Seat flight IDs are required")
+    private List<Long> seatFlightIds;
+
+    @NotNull(message = "Flight IDs are required")
+    private List<Long> flightIds;
+
     private LocalDate bookingDate;
 
     @Size(max = 50, message = "Booking source must be at most 50 characters")

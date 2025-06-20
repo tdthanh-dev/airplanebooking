@@ -7,6 +7,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.FetchType;
 import lombok.AllArgsConstructor;
@@ -15,6 +16,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Entity
 @Table(name = "passengers")
@@ -26,10 +28,6 @@ public class Passenger extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "booking_id", nullable = true)
-    private Booking booking;
 
     @Column(name = "first_name", nullable = false, length = 50)
     private String firstName;
@@ -43,7 +41,18 @@ public class Passenger extends BaseEntity {
     @Column(name = "gender", nullable = false, length = 10)
     private String gender;
 
-    @Column(name = "personal_id", nullable = false, length = 13)
+    @Column(name = "personal_id", length = 13)
     private String personalId;
 
+    @Column(name = "passport_number", length = 13)
+    private String passportNumber;
+
+    @Column(name = "email", length = 100)
+    private String email;
+
+    @Column(name = "phone", length = 10)
+    private String phone;
+
+    @ManyToMany(mappedBy = "passengers", fetch = FetchType.LAZY)
+    private List<Booking> bookings;
 }

@@ -16,12 +16,15 @@ import com.project.airplanebooking.exception.ResourceNotFoundException;
 import com.project.airplanebooking.model.Booking;
 import com.project.airplanebooking.model.Flight;
 import com.project.airplanebooking.model.Passenger;
+import com.project.airplanebooking.model.SeatFlight;
 import com.project.airplanebooking.model.User;
 import com.project.airplanebooking.repository.BookingRepository;
 import com.project.airplanebooking.repository.FlightRepository;
 import com.project.airplanebooking.repository.PassengerRepository;
+import com.project.airplanebooking.repository.SeatFlightRepository;
 import com.project.airplanebooking.repository.UserRepository;
 import com.project.airplanebooking.service.BookingService;
+import com.project.airplanebooking.service.SeatFlightService;
 
 @Service
 public class BookingServiceImpl implements BookingService {
@@ -30,17 +33,23 @@ public class BookingServiceImpl implements BookingService {
     private final FlightRepository flightRepository;
     private final UserRepository userRepository;
     private final PassengerRepository passengerRepository;
+    private final SeatFlightService seatFlightService;
+    private final SeatFlightRepository seatFlightRepository;
 
     @Autowired
     public BookingServiceImpl(
             BookingRepository bookingRepository,
             FlightRepository flightRepository,
             UserRepository userRepository,
-            PassengerRepository passengerRepository) {
+            PassengerRepository passengerRepository,
+            SeatFlightService seatFlightService,
+            SeatFlightRepository seatFlightRepository) {
         this.bookingRepository = bookingRepository;
         this.flightRepository = flightRepository;
         this.userRepository = userRepository;
         this.passengerRepository = passengerRepository;
+        this.seatFlightService = seatFlightService;
+        this.seatFlightRepository = seatFlightRepository;
     }
 
     @Override
@@ -62,6 +71,19 @@ public class BookingServiceImpl implements BookingService {
         booking.setBookingSource(bookingDTO.getBookingSource());
         booking.setPromotionCode(bookingDTO.getPromotionCode() != null ? bookingDTO.getPromotionCode() : "");
         booking.setCancellationReason("");
+        booking.setFlights(flightRepository.findAllById(bookingDTO.getFlightIds()));
+        booking.setSeatFlights(seatFlightRepository.findAllById(bookingDTO.getSeatFlightIds()));
+
+        for (Flight flight : booking.getFlights()) {
+            List<Long> seatFlightIds = booking.getSeatFlights().stream()
+                    .filter(seatFlight -> seatFlight.getFlight().getId().equals(flight.getId()))
+                    .map(SeatFlight::getId)
+                    .collect(Collectors.toList());
+
+            if (!seatFlightIds.isEmpty()) {
+                seatFlightService.changeSeatsToHold(seatFlightIds, flight.getId());
+            }
+        }
 
         // Lưu booking
         return bookingRepository.save(booking);
@@ -96,7 +118,6 @@ public class BookingServiceImpl implements BookingService {
 
         // Lưu thông tin hành khách
         for (Passenger passenger : passengers) {
-            passenger.setBooking(savedBooking);
             passengerRepository.save(passenger);
         }
 
@@ -118,7 +139,6 @@ public class BookingServiceImpl implements BookingService {
                     passenger.setDateOfBirth(passengerDTO.getBirthDate());
                     passenger.setGender(passengerDTO.getGender());
                     passenger.setPersonalId(passengerDTO.getPersonalId());
-                    passenger.setBooking(booking);
                     return passenger;
                 })
                 .collect(Collectors.toList());

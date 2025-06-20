@@ -8,6 +8,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.CascadeType;
 import java.time.LocalDateTime;
@@ -34,11 +36,16 @@ public class Booking extends BaseEntity {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "booking_passengers", joinColumns = @JoinColumn(name = "booking_id"), inverseJoinColumns = @JoinColumn(name = "passenger_id"))
     private List<Passenger> passengers;
 
     @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Ticket> tickets;
+    private List<SeatFlight> seatFlights;
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "booking_flights", joinColumns = @JoinColumn(name = "booking_id"), inverseJoinColumns = @JoinColumn(name = "flight_id"))
+    private List<Flight> flights;
 
     @Column(name = "booking_reference", nullable = false, length = 50)
     private String bookingReference;
