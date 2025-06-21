@@ -194,4 +194,14 @@ public class BookingController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
+
+    @PutMapping("/{id}/confirm")
+    public ResponseEntity<?> confirmBooking(@PathVariable Long id) {
+        try {
+            Booking booking = bookingServiceImpl.confirmBooking(id);
+            return ResponseEntity.ok(new BookingResponse(booking));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
 }

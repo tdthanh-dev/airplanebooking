@@ -47,4 +47,7 @@ public interface BookingService {
 
     // Hủy booking với lý do
     boolean cancelBooking(Long id, String reason);
+
+    // Xác nhận booking và chuyển seat status từ HOLD sang BOOKED
+    Booking confirmBooking(Long id);
 }

@@ -15,27 +15,25 @@ public class TicketDTO {
 
     @NotNull(message = "Flight ID is required")
     private Long flightId;
-
     @NotNull(message = "Passenger ID is required")
     private Long passengerId;
+    @NotNull(message = "Seat Flight ID is required")
+    private Long seatFlightId;
 
-    @NotNull(message = "Seat ID is required")
-    private Long seatId;
-
-    @NotNull(message = "Ticket price is required")
+    // Optional - sẽ tự động lấy từ SeatFlight nếu không có
     @Positive(message = "Ticket price must be positive")
     private Double ticketPrice;
 
-    @NotNull(message = "Ticket type is required")
+    // Optional - sẽ tự động lấy từ Booking nếu không có
     private String ticketType;
 
-    @NotNull(message = "Ticket class is required")
+    // Optional - sẽ tự động lấy từ SeatFlight nếu không có
     private String ticketClass;
 
-    @NotNull(message = "Leg number is required")
-    private Integer legNumber = 1; // Default to 1
+    // Optional - sẽ tự động tính toán nếu không có
+    private Integer legNumber;
 
     private Long relatedTicketId;
 
-    private String status = "CONFIRMED";
+    private String status = "ACTIVE";
 }

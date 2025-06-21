@@ -1,6 +1,5 @@
 package com.project.airplanebooking.service.impl;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -15,12 +14,12 @@ import com.project.airplanebooking.exception.EntityNotFoundException;
 import com.project.airplanebooking.model.Booking;
 import com.project.airplanebooking.model.Flight;
 import com.project.airplanebooking.model.Passenger;
-import com.project.airplanebooking.model.Seat;
+import com.project.airplanebooking.model.SeatFlight;
 import com.project.airplanebooking.model.Ticket;
 import com.project.airplanebooking.repository.BookingRepository;
 import com.project.airplanebooking.repository.FlightRepository;
 import com.project.airplanebooking.repository.PassengerRepository;
-import com.project.airplanebooking.repository.SeatRepository;
+import com.project.airplanebooking.repository.SeatFlightRepository;
 import com.project.airplanebooking.repository.TicketRepository;
 import com.project.airplanebooking.service.TicketService;
 
@@ -31,7 +30,7 @@ public class TicketServiceImpl implements TicketService {
     private final BookingRepository bookingRepository;
     private final FlightRepository flightRepository;
     private final PassengerRepository passengerRepository;
-    private final SeatRepository seatRepository;
+    private final SeatFlightRepository seatFlightRepository;
 
     @Autowired
     public TicketServiceImpl(
@@ -39,12 +38,12 @@ public class TicketServiceImpl implements TicketService {
             BookingRepository bookingRepository,
             FlightRepository flightRepository,
             PassengerRepository passengerRepository,
-            SeatRepository seatRepository) {
+            SeatFlightRepository seatFlightRepository) {
         this.ticketRepository = ticketRepository;
         this.bookingRepository = bookingRepository;
         this.flightRepository = flightRepository;
         this.passengerRepository = passengerRepository;
-        this.seatRepository = seatRepository;
+        this.seatFlightRepository = seatFlightRepository;
     }
 
     @Override
@@ -58,100 +57,46 @@ public class TicketServiceImpl implements TicketService {
         Passenger passenger = passengerRepository.findById(ticketDTO.getPassengerId())
                 .orElseThrow(() -> new EntityNotFoundException(Passenger.class, ticketDTO.getPassengerId()));
 
-        Seat seat = seatRepository.findById(ticketDTO.getSeatId())
-                .orElseThrow(() -> new EntityNotFoundException(Seat.class, ticketDTO.getSeatId()));
+        SeatFlight seatFlight = seatFlightRepository.findById(ticketDTO.getSeatFlightId())
+                .orElseThrow(() -> new EntityNotFoundException(SeatFlight.class, ticketDTO.getSeatFlightId()));
 
-        if (!"AVAILABLE".equals(seat.getStatus())) {
-            throw new BusinessLogicException("Ghế đã có người đặt");
+        if (!"BOOKED".equals(seatFlight.getStatus())) {
+            throw new BusinessLogicException("Ghế chưa được book hoặc không khả dụng để xuất vé");
         }
-
         Ticket ticket = new Ticket();
         ticket.setTicketNumber(generateTicketNumber());
         ticket.setBooking(booking);
         ticket.setFlight(flight);
         ticket.setPassenger(passenger);
-        ticket.setSeat(seat);
-        ticket.setTicketPrice(ticketDTO.getTicketPrice());
-        ticket.setTicketClass(ticketDTO.getTicketClass());
-        ticket.setTicketType(ticketDTO.getTicketType());
-        ticket.setLegNumber(ticketDTO.getLegNumber());
-        ticket.setRelatedTicketId(ticketDTO.getRelatedTicketId());
-        ticket.setStatus(ticketDTO.getStatus());
+        ticket.setSeatFlight(seatFlight);
 
-        seat.setStatus("BOOKED");
-        seatRepository.save(seat);
+        ticket.setTicketPrice(seatFlight.getPrice() != null ? seatFlight.getPrice() : ticketDTO.getTicketPrice());
+        ticket.setTicketClass(seatFlight.getSeatType() != null ? seatFlight.getSeatType() : ticketDTO.getTicketClass());
+        ticket.setTicketType(
+                booking.getTripType() != null ? (booking.getTripType().equals("ROUND_TRIP") ? "ROUND_TRIP" : "ONE_WAY")
+                        : ticketDTO.getTicketType());
+        List<Flight> bookingFlights = new ArrayList<>(booking.getFlights());
+        bookingFlights.sort((f1, f2) -> f1.getDepartureTime().compareTo(f2.getDepartureTime()));
+        int legNumber = bookingFlights.indexOf(flight) + 1;
+        ticket.setLegNumber(legNumber > 0 ? legNumber : ticketDTO.getLegNumber());
+
+        ticket.setRelatedTicketId(ticketDTO.getRelatedTicketId());
+        ticket.setStatus("ACTIVE");
 
         return ticketRepository.save(ticket);
     }
 
     private String generateTicketNumber() {
-        return "TICKET-" + UUID.randomUUID().toString().substring(0, 10).toUpperCase();
+        return "TK-" + System.currentTimeMillis() + "-" + UUID.randomUUID().toString().substring(0, 6).toUpperCase();
     }
 
     @Override
     public Ticket updateTicket(Long id, TicketDTO ticketDTO) {
         Ticket ticket = getTicketById(id);
 
-        if (ticketDTO.getBookingId() != null) {
-            Booking booking = bookingRepository.findById(ticketDTO.getBookingId())
-                    .orElseThrow(() -> new EntityNotFoundException(Booking.class, ticketDTO.getBookingId()));
-            ticket.setBooking(booking);
-        }
-
-        if (ticketDTO.getFlightId() != null) {
-            Flight flight = flightRepository.findById(ticketDTO.getFlightId())
-                    .orElseThrow(() -> new EntityNotFoundException(Flight.class, ticketDTO.getFlightId()));
-            ticket.setFlight(flight);
-        }
-
-        if (ticketDTO.getPassengerId() != null) {
-            Passenger passenger = passengerRepository.findById(ticketDTO.getPassengerId())
-                    .orElseThrow(() -> new EntityNotFoundException(Passenger.class, ticketDTO.getPassengerId()));
-            ticket.setPassenger(passenger);
-        }
-
-        if (ticketDTO.getSeatId() != null) {
-            // Make the current seat available
-            Seat currentSeat = ticket.getSeat();
-            currentSeat.setStatus("AVAILABLE");
-            seatRepository.save(currentSeat);
-
-            // Set the new seat
-            Seat newSeat = seatRepository.findById(ticketDTO.getSeatId())
-                    .orElseThrow(() -> new EntityNotFoundException(Seat.class, ticketDTO.getSeatId()));
-
-            // Check if new seat is available
-            if (!"AVAILABLE".equals(newSeat.getStatus())) {
-                throw new BusinessLogicException("Ghế không khả dụng");
-            }
-
-            ticket.setSeat(newSeat);
-
-            // Update new seat status
-            newSeat.setStatus("BOOKED");
-            seatRepository.save(newSeat);
-        }
-
         if (ticketDTO.getTicketPrice() != null) {
             ticket.setTicketPrice(ticketDTO.getTicketPrice());
         }
-
-        if (ticketDTO.getTicketClass() != null) {
-            ticket.setTicketClass(ticketDTO.getTicketClass());
-        }
-
-        if (ticketDTO.getTicketType() != null) {
-            ticket.setTicketType(ticketDTO.getTicketType());
-        }
-
-        if (ticketDTO.getLegNumber() != null) {
-            ticket.setLegNumber(ticketDTO.getLegNumber());
-        }
-
-        if (ticketDTO.getRelatedTicketId() != null) {
-            ticket.setRelatedTicketId(ticketDTO.getRelatedTicketId());
-        }
-
         if (ticketDTO.getStatus() != null) {
             ticket.setStatus(ticketDTO.getStatus());
         }
@@ -162,13 +107,8 @@ public class TicketServiceImpl implements TicketService {
     @Override
     public void deleteTicket(Long id) {
         Ticket ticket = getTicketById(id);
-
-        // Make the seat available again
-        Seat seat = ticket.getSeat();
-        seat.setStatus("AVAILABLE");
-        seatRepository.save(seat);
-
-        ticketRepository.delete(ticket);
+        ticket.setStatus("CANCELLED");
+        ticketRepository.save(ticket);
     }
 
     @Override
@@ -180,5 +120,132 @@ public class TicketServiceImpl implements TicketService {
     @Override
     public List<Ticket> getAllTickets() {
         return ticketRepository.findAll();
+    }
+
+    @Transactional
+    public Ticket generateTicketForBooking(Long bookingId, Long passengerId, Long flightId, Long seatFlightId) {
+        return createTicketAutomatically(bookingId, passengerId, flightId, seatFlightId);
+    }
+
+    @Override
+    @Transactional
+    public List<Ticket> generateAllTicketsForBooking(Long bookingId) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new EntityNotFoundException(Booking.class, bookingId));
+
+        if (!"CONFIRMED".equals(booking.getStatus())) {
+            throw new BusinessLogicException("Chỉ có thể xuất vé cho booking đã được xác nhận");
+        }
+
+        List<Ticket> tickets = new ArrayList<>();
+
+        List<Passenger> passengers = booking.getPassengers();
+        List<SeatFlight> seatFlights = booking.getSeatFlights();
+
+        for (Passenger passenger : passengers) {
+            for (Flight flight : booking.getFlights()) {
+                List<SeatFlight> passengerSeatsOnFlight = seatFlights.stream()
+                        .filter(sf -> sf.getFlight().getId().equals(flight.getId()))
+                        .toList();
+
+                if (!passengerSeatsOnFlight.isEmpty()) {
+                    SeatFlight seatFlight = passengerSeatsOnFlight.get(0);
+                    try {
+                        Ticket ticket = generateTicketForBooking(bookingId, passenger.getId(),
+                                flight.getId(), seatFlight.getId());
+                        tickets.add(ticket);
+                    } catch (BusinessLogicException e) {
+                        System.out.println("Ticket already exists: " + e.getMessage());
+                    }
+                }
+            }
+        }
+
+        return tickets;
+    }
+
+    @Override
+    @Transactional
+    public List<Ticket> generateTicketsForBookingAndFlight(Long bookingId, Long flightId) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new EntityNotFoundException(Booking.class, bookingId));
+
+        flightRepository.findById(flightId)
+                .orElseThrow(() -> new EntityNotFoundException(Flight.class, flightId));
+
+        List<Ticket> tickets = new ArrayList<>();
+        List<Passenger> passengers = booking.getPassengers();
+        List<SeatFlight> seatFlights = booking.getSeatFlights().stream()
+                .filter(sf -> sf.getFlight().getId().equals(flightId))
+                .toList();
+
+        for (int i = 0; i < passengers.size() && i < seatFlights.size(); i++) {
+            Passenger passenger = passengers.get(i);
+            SeatFlight seatFlight = seatFlights.get(i);
+
+            try {
+                Ticket ticket = generateTicketForBooking(bookingId, passenger.getId(),
+                        flightId, seatFlight.getId());
+                tickets.add(ticket);
+            } catch (BusinessLogicException e) {
+                System.out.println("Ticket generation failed: " + e.getMessage());
+            }
+        }
+
+        return tickets;
+    }
+
+    @Override
+    public List<Ticket> getTicketsByBookingReference(String bookingReference) {
+        Booking booking = bookingRepository.findByBookingReference(bookingReference)
+                .orElseThrow(
+                        () -> new EntityNotFoundException("Booking not found with reference: " + bookingReference));
+        return ticketRepository.findByBooking(booking);
+    }
+
+    @Override
+    public List<Ticket> getTicketsByPassenger(Long passengerId) {
+        Passenger passenger = passengerRepository.findById(passengerId)
+                .orElseThrow(() -> new EntityNotFoundException(Passenger.class, passengerId));
+        return ticketRepository.findByPassenger(passenger);
+    }
+
+    @Transactional
+    public Ticket createTicketAutomatically(Long bookingId, Long passengerId, Long flightId, Long seatFlightId) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new EntityNotFoundException(Booking.class, bookingId));
+
+        Flight flight = flightRepository.findById(flightId)
+                .orElseThrow(() -> new EntityNotFoundException(Flight.class, flightId));
+
+        Passenger passenger = passengerRepository.findById(passengerId)
+                .orElseThrow(() -> new EntityNotFoundException(Passenger.class, passengerId));
+
+        SeatFlight seatFlight = seatFlightRepository.findById(seatFlightId)
+                .orElseThrow(() -> new EntityNotFoundException(SeatFlight.class, seatFlightId));
+
+        if (!"BOOKED".equals(seatFlight.getStatus())) {
+            throw new BusinessLogicException("Ghế chưa được book hoặc không khả dụng để xuất vé");
+        }
+
+        Ticket ticket = new Ticket();
+        ticket.setTicketNumber(generateTicketNumber());
+        ticket.setBooking(booking);
+        ticket.setFlight(flight);
+        ticket.setPassenger(passenger);
+        ticket.setSeatFlight(seatFlight);
+
+        ticket.setTicketPrice(seatFlight.getPrice());
+        ticket.setTicketClass(seatFlight.getSeatType());
+        ticket.setTicketType(booking.getTripType().equals("ROUND_TRIP") ? "ROUND_TRIP" : "ONE_WAY");
+
+        List<Flight> bookingFlights = new ArrayList<>(booking.getFlights());
+        bookingFlights.sort((f1, f2) -> f1.getDepartureTime().compareTo(f2.getDepartureTime()));
+        int legNumber = bookingFlights.indexOf(flight) + 1;
+        ticket.setLegNumber(legNumber);
+
+        ticket.setStatus("ACTIVE");
+
+        return ticketRepository.save(ticket);
     }
 }
