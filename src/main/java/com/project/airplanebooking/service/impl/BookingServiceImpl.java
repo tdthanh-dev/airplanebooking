@@ -328,7 +328,6 @@ public class BookingServiceImpl implements BookingService {
 
         booking.setStatus("CONFIRMED");
 
-        // Kiểm tra xem tất cả các ghế có sẵn để đặt không
         for (SeatFlight seatFlight : booking.getSeatFlights()) {
             SeatFlight currentState = seatFlightRepository.findById(seatFlight.getId())
                     .orElseThrow(() -> new ResourceNotFoundException("Seat not found: " + seatFlight.getId()));
@@ -338,7 +337,6 @@ public class BookingServiceImpl implements BookingService {
             }
         }
 
-        // Cập nhật trạng thái ghế
         for (SeatFlight seatFlight : booking.getSeatFlights()) {
             seatFlight.setStatus("BOOKED");
             seatFlightRepository.save(seatFlight);
@@ -346,8 +344,24 @@ public class BookingServiceImpl implements BookingService {
 
         Booking savedBooking = bookingRepository.save(booking);
 
-        // Không cố gắng sinh vé trong cùng transaction
+        // Tạo vé trong một luồng riêng biệt sau khi xác nhận booking thành công
+        try {
+            // Gọi phương thức tạo vé trong một transaction mới
+            generateTicketsAsync(savedBooking.getId());
+        } catch (Exception e) {
+            // Log lỗi nhưng không ảnh hưởng đến transaction xác nhận booking
+            System.err.println("Lỗi tạo vé tự động cho booking " + savedBooking.getId() + ": " + e.getMessage());
+        }
+
         return savedBooking;
+    }
+
+    /**
+     * Phương thức trung gian để tạo vé một cách bất đồng bộ
+     */
+    private void generateTicketsAsync(final Long bookingId) {
+        // Spring sẽ tạo một transaction mới cho phương thức gọi qua proxy
+        ticketService.generateAllTicketsForBooking(bookingId);
     }
 
     private String generateBookingReference() {

@@ -79,4 +79,29 @@ public class TicketController {
         }
     }
 
+    @PostMapping("/booking/{bookingId}/generate")
+    public ResponseEntity<?> generateTicket(@PathVariable Long bookingId) {
+        try {
+            List<Ticket> tickets = ticketServiceImpl.generateTicket(bookingId);
+            List<TicketResponse> responseList = tickets.stream()
+                    .map(TicketResponse::new)
+                    .collect(Collectors.toList());
+            return ResponseEntity.ok(responseList);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/booking/{bookingId}/generate-all")
+    public ResponseEntity<?> generateAllTickets(@PathVariable Long bookingId) {
+        try {
+            List<Ticket> tickets = ticketServiceImpl.generateAllTicketsForBooking(bookingId);
+            List<TicketResponse> responseList = tickets.stream()
+                    .map(TicketResponse::new)
+                    .collect(Collectors.toList());
+            return ResponseEntity.ok(responseList);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
 }

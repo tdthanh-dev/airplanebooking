@@ -16,21 +16,14 @@ public interface TicketService {
 
     List<Ticket> getAllTickets();
 
-    // Xuất vé cho booking sau khi được xác nhận
-    Ticket generateTicketForBooking(Long bookingId, Long passengerId, Long flightId, Long seatFlightId);
+    List<Ticket> generateTicket(Long bookingId);
 
-    // Xuất tất cả vé cho một booking
+    /**
+     * Tạo vé cho tất cả hành khách và chuyến bay của một booking
+     * Transaction mới và độc lập với booking transaction
+     * 
+     * @param bookingId ID của booking cần tạo vé
+     * @return Danh sách các vé đã tạo
+     */
     List<Ticket> generateAllTicketsForBooking(Long bookingId);
-
-    // Xuất vé cho booking theo từng chuyến bay
-    List<Ticket> generateTicketsForBookingAndFlight(Long bookingId, Long flightId);
-
-    // Tìm vé theo booking reference
-    List<Ticket> getTicketsByBookingReference(String bookingReference);
-
-    // Tìm vé theo passenger
-    List<Ticket> getTicketsByPassenger(Long passengerId);
-
-    // Tạo vé hoàn toàn tự động (không cần DTO chi tiết)
-    Ticket createTicketAutomatically(Long bookingId, Long passengerId, Long flightId, Long seatFlightId);
 }
