@@ -14,7 +14,7 @@ import com.project.airplanebooking.dto.response.UserResponse;
 import com.project.airplanebooking.service.AuthService;
 
 @RestController
-@RequestMapping("/api/v1/auth")
+@RequestMapping("/api/v2/auth")
 @CrossOrigin(origins = { "http://localhost:3000", "http://localhost:8080" })
 public class AuthV1Controller {
 
