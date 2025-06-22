@@ -34,10 +34,56 @@ public class FlightResponse {
     public FlightResponse(Flight flight) {
         this.id = flight.getId();
         this.flightNumber = flight.getFlightNo();
-        this.departureAirport = new AirportResponse(flight.getDepartureAirport());
-        this.arrivalAirport = new AirportResponse(flight.getArrivalAirport());
-        this.airline = new AirlineResponse(flight.getAirline());
-        this.airplane = new AirplaneResponse(flight.getAirplane());
+
+        if (flight.getDepartureAirport() != null) {
+            this.departureAirport = new AirportResponse();
+            this.departureAirport.setId(flight.getDepartureAirport().getId());
+            this.departureAirport.setName(flight.getDepartureAirport().getName());
+            this.departureAirport.setCity(flight.getDepartureAirport().getCity());
+            this.departureAirport.setState(flight.getDepartureAirport().getState());
+            this.departureAirport.setCountry(flight.getDepartureAirport().getCountry());
+            this.departureAirport.setIataCode(flight.getDepartureAirport().getIataCode());
+            this.departureAirport.setIcaoCode(flight.getDepartureAirport().getIcaoCode());
+        }
+
+        if (flight.getArrivalAirport() != null) {
+            this.arrivalAirport = new AirportResponse();
+            this.arrivalAirport.setId(flight.getArrivalAirport().getId());
+            this.arrivalAirport.setName(flight.getArrivalAirport().getName());
+            this.arrivalAirport.setCity(flight.getArrivalAirport().getCity());
+            this.arrivalAirport.setState(flight.getArrivalAirport().getState());
+            this.arrivalAirport.setCountry(flight.getArrivalAirport().getCountry());
+            this.arrivalAirport.setIataCode(flight.getArrivalAirport().getIataCode());
+            this.arrivalAirport.setIcaoCode(flight.getArrivalAirport().getIcaoCode());
+        }
+
+        if (flight.getAirline() != null) {
+            this.airline = new AirlineResponse();
+            this.airline.setId(flight.getAirline().getId());
+            this.airline.setName(flight.getAirline().getName());
+            this.airline.setIataCode(flight.getAirline().getIataCode());
+            this.airline.setIcaoCode(flight.getAirline().getIcaoCode());
+            this.airline.setCallSign(flight.getAirline().getCallSign());
+            this.airline.setCountry(flight.getAirline().getCountry());
+            this.airline.setWebsite(flight.getAirline().getWebsite());
+            this.airline.setHotline(flight.getAirline().getHotline());
+        }
+
+        if (flight.getAirplane() != null) {
+            this.airplane = new AirplaneResponse();
+            this.airplane.setId(flight.getAirplane().getId());
+            this.airplane.setModel(flight.getAirplane().getModel());
+            this.airplane.setRegistrationNumber(flight.getAirplane().getRegistrationNumber());
+            this.airplane.setSeatCapacity(flight.getAirplane().getSeatCapacity());
+            // Không truy cập vào airline để tránh vòng lặp vô tận
+            if (flight.getAirplane().getAirline() != null) {
+                AirlineResponse airlineResponse = new AirlineResponse();
+                airlineResponse.setId(flight.getAirplane().getAirline().getId());
+                airlineResponse.setName(flight.getAirplane().getAirline().getName());
+                this.airplane.setAirline(airlineResponse);
+            }
+        }
+
         this.departureTime = flight.getDepartureTime();
         this.arrivalTime = flight.getArrivalTime();
         this.basePrice = BigDecimal.valueOf(flight.getBaseFare());

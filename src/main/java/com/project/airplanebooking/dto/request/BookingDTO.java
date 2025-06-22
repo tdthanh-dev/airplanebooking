@@ -28,7 +28,6 @@ public class BookingDTO {
     @Size(max = 20, message = "Trip type must be at most 20 characters")
     private String tripType = "ONE_WAY";
 
-    @NotNull(message = "Passengers are required")
     private List<PassengerDTO> passengers;
 
     @NotNull(message = "Seat flight IDs are required")

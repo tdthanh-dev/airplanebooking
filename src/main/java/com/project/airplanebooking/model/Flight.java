@@ -14,6 +14,9 @@ import lombok.NoArgsConstructor;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.FetchType;
+import java.util.List;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import jakarta.persistence.ManyToMany;
 
 @Entity
 @Table(name = "flights")
@@ -75,5 +78,7 @@ public class Flight extends BaseEntity {
     @Column(name = "flight_type", nullable = false, length = 50)
     private String flightType;
 
-    
+    @JsonBackReference("booking-flights")
+    @ManyToMany(mappedBy = "flights")
+    private List<Booking> bookings;
 }

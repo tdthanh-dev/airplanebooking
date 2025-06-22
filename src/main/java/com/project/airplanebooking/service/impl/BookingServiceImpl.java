@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.project.airplanebooking.dto.request.BookingDTO;
+import com.project.airplanebooking.dto.request.PassengerDTO;
 import com.project.airplanebooking.exception.BadRequestException;
 import com.project.airplanebooking.exception.ResourceNotFoundException;
 import com.project.airplanebooking.model.Booking;
@@ -23,6 +24,7 @@ import com.project.airplanebooking.repository.PassengerRepository;
 import com.project.airplanebooking.repository.SeatFlightRepository;
 import com.project.airplanebooking.repository.UserRepository;
 import com.project.airplanebooking.service.BookingService;
+import com.project.airplanebooking.service.PassengerService;
 import com.project.airplanebooking.service.SeatFlightService;
 import com.project.airplanebooking.service.TicketService;
 
@@ -36,6 +38,7 @@ public class BookingServiceImpl implements BookingService {
     private final SeatFlightService seatFlightService;
     private final SeatFlightRepository seatFlightRepository;
     private final TicketService ticketService;
+    private final PassengerService passengerService;
 
     @Autowired
     public BookingServiceImpl(
@@ -44,6 +47,7 @@ public class BookingServiceImpl implements BookingService {
             UserRepository userRepository,
             PassengerRepository passengerRepository,
             SeatFlightService seatFlightService,
+            PassengerService passengerService,
             SeatFlightRepository seatFlightRepository,
             TicketService ticketService) {
         this.bookingRepository = bookingRepository;
@@ -53,6 +57,7 @@ public class BookingServiceImpl implements BookingService {
         this.seatFlightService = seatFlightService;
         this.seatFlightRepository = seatFlightRepository;
         this.ticketService = ticketService;
+        this.passengerService = passengerService;
     }
 
     @Override
@@ -84,11 +89,15 @@ public class BookingServiceImpl implements BookingService {
 
         Booking savedBooking = bookingRepository.save(booking);
 
-        List<Passenger> savedPassengers = passengers.stream()
-                .map(passenger -> passengerRepository.save(passenger))
-                .collect(Collectors.toList());
-
-        savedBooking.setPassengers(savedPassengers);
+        for (Passenger passenger : passengers) {
+            PassengerDTO passengerDTO = new PassengerDTO();
+            passengerDTO.setFirstName(passenger.getFirstName());
+            passengerDTO.setLastName(passenger.getLastName());
+            passengerDTO.setBirthDate(passenger.getDateOfBirth());
+            passengerDTO.setGender(passenger.getGender());
+            passengerDTO.setPersonalId(passenger.getPersonalId());
+            passengerService.createPassenger(passengerDTO, savedBooking);
+        }
 
         return bookingRepository.save(savedBooking);
     }
@@ -96,9 +105,18 @@ public class BookingServiceImpl implements BookingService {
     @Override
     @Transactional
     public Booking createBookingWithPassengers(BookingDTO bookingDTO) {
+        // Kiểm tra user
         User user = userRepository.findById(bookingDTO.getUserId())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + bookingDTO.getUserId()));
 
+        // Kiểm tra null cho các trường quan trọng
+        if (bookingDTO.getTripType() == null || bookingDTO.getFlightIds() == null ||
+                bookingDTO.getSeatFlightIds() == null || bookingDTO.getPassengerCount() == null ||
+                bookingDTO.getPassengers() == null) {
+            throw new BadRequestException("Missing required booking information");
+        }
+
+        // Kiểm tra tripType và số lượng flights
         if ("ROUND_TRIP".equals(bookingDTO.getTripType())) {
             if (bookingDTO.getFlightIds().size() != 2) {
                 throw new BadRequestException("Round trip booking must have exactly 2 flights (outbound and return)");
@@ -115,6 +133,32 @@ public class BookingServiceImpl implements BookingService {
                 throw new BadRequestException(
                         "One way booking must have at least " + bookingDTO.getPassengerCount() + " seats");
             }
+        } else {
+            throw new BadRequestException("Invalid trip type: " + bookingDTO.getTripType());
+        }
+
+        // Kiểm tra flights có tồn tại
+        List<Flight> flights = flightRepository.findAllById(bookingDTO.getFlightIds());
+        if (flights.size() != bookingDTO.getFlightIds().size()) {
+            throw new ResourceNotFoundException("One or more flights not found");
+        }
+
+        // Kiểm tra seats có tồn tại và available
+        List<SeatFlight> seatFlights = seatFlightRepository.findAllById(bookingDTO.getSeatFlightIds());
+        if (seatFlights.size() != bookingDTO.getSeatFlightIds().size()) {
+            throw new ResourceNotFoundException("One or more seats not found");
+        }
+
+        for (SeatFlight seatFlight : seatFlights) {
+            if (!"AVAILABLE".equals(seatFlight.getStatus())) {
+                throw new BadRequestException("Seat " + seatFlight.getId() + " is not available");
+            }
+        }
+
+        // Tính toán và kiểm tra giá vé
+        double calculatedPrice = 0;
+        for (Flight flight : flights) {
+            calculatedPrice += flight.getCurrentPrice() * bookingDTO.getPassengerCount();
         }
 
         // Tạo booking mới
@@ -122,56 +166,39 @@ public class BookingServiceImpl implements BookingService {
         booking.setUser(user);
         booking.setBookingReference(generateBookingReference());
         booking.setBookingDate(LocalDateTime.now());
-        booking.setTotalPrice(bookingDTO.getTotalPrice());
+        booking.setTotalPrice(calculatedPrice); // Dùng giá tính toán từ server
         booking.setStatus("PENDING");
         booking.setPassengerCount(bookingDTO.getPassengerCount());
         booking.setTripType(bookingDTO.getTripType());
         booking.setBookingSource(bookingDTO.getBookingSource() != null ? bookingDTO.getBookingSource() : "ONLINE");
         booking.setPromotionCode(bookingDTO.getPromotionCode() != null ? bookingDTO.getPromotionCode() : "");
         booking.setCancellationReason("");
-        booking.setFlights(flightRepository.findAllById(bookingDTO.getFlightIds()));
-        booking.setSeatFlights(seatFlightRepository.findAllById(bookingDTO.getSeatFlightIds()));
+        booking.setFlights(flights);
 
         // Lưu booking trước để có ID
         Booking savedBooking = bookingRepository.save(booking);
 
-        // Tạo và lưu passengers với liên kết đến booking
-        List<Passenger> passengers = bookingDTO.getPassengers().stream()
-                .map(passengerDTO -> {
-                    Passenger passenger = new Passenger();
-                    passenger.setFirstName(passengerDTO.getFirstName());
-                    passenger.setLastName(passengerDTO.getLastName());
-                    passenger.setDateOfBirth(passengerDTO.getBirthDate());
-                    passenger.setGender(passengerDTO.getGender());
-                    passenger.setPersonalId(passengerDTO.getPersonalId());
-                    passenger.setPassportNumber(passengerDTO.getPassportNumber());
-                    passenger.setEmail(passengerDTO.getEmail());
-                    passenger.setPhone(passengerDTO.getPhone());
-                    return passengerRepository.save(passenger);
-                })
-                .collect(Collectors.toList());
+        // Tạo và lưu passengers
+        for (PassengerDTO passengerDTO : bookingDTO.getPassengers()) {
+            // Kiểm tra thông tin passenger
+            if (passengerDTO.getFirstName() == null || passengerDTO.getLastName() == null ||
+                    passengerDTO.getBirthDate() == null || passengerDTO.getGender() == null) {
+                throw new BadRequestException("Missing required passenger information");
+            }
 
-        savedBooking.setPassengers(passengers);
+            // Sử dụng service để tạo passenger
+            passengerService.createPassenger(passengerDTO, savedBooking);
+        }
 
-        List<SeatFlight> seatFlights = seatFlightRepository.findAllById(bookingDTO.getSeatFlightIds());
+        // Cập nhật trạng thái ghế
         for (SeatFlight seatFlight : seatFlights) {
+            seatFlight.setStatus("HOLD");
             seatFlight.setBooking(savedBooking);
+            seatFlight.setDateHold(LocalDateTime.now());
             seatFlightRepository.save(seatFlight);
         }
+
         savedBooking.setSeatFlights(seatFlights);
-
-        for (Flight flight : savedBooking.getFlights()) {
-            List<Long> seatFlightIds = seatFlights.stream()
-                    .filter(seatFlight -> seatFlight.getFlight().getId().equals(flight.getId()))
-                    .map(SeatFlight::getId)
-                    .collect(Collectors.toList());
-
-            if (!seatFlightIds.isEmpty()) {
-                seatFlightService.changeSeatsToHold(seatFlightIds, flight.getId());
-                System.out.println("Held " + seatFlightIds.size() + " seats for flight " + flight.getFlightNo()
-                        + " (ID: " + flight.getId() + ")");
-            }
-        }
 
         return bookingRepository.save(savedBooking);
     }

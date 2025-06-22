@@ -30,16 +30,6 @@ public class PassengerController {
         this.bookingServiceImpl = bookingServiceImpl;
     }
 
-    @PostMapping("/")
-    public ResponseEntity<?> createPassenger(@Valid @RequestBody PassengerDTO passengerDTO) {
-        try {
-            Passenger passenger = passengerServiceImpl.createPassenger(passengerDTO);
-            return ResponseEntity.ok(new PassengerResponse(passenger));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        }
-    }
-
     @GetMapping("/")
     public ResponseEntity<?> getAllPassengers() {
         try {
@@ -58,6 +48,19 @@ public class PassengerController {
         try {
             Passenger passenger = passengerServiceImpl.getPassengerById(id);
             return ResponseEntity.ok(new PassengerResponse(passenger));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/booking/{bookingId}")
+    public ResponseEntity<?> getPassengersByBookingId(@PathVariable Long bookingId) {
+        try {
+            List<Passenger> passengers = passengerServiceImpl.getPassengersByBookingId(bookingId);
+            List<PassengerResponse> responseList = passengers.stream()
+                    .map(PassengerResponse::new)
+                    .collect(Collectors.toList());
+            return ResponseEntity.ok(responseList);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }

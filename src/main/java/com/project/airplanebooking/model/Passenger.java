@@ -9,6 +9,7 @@ import jakarta.persistence.Table;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
 import jakarta.persistence.FetchType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -16,7 +17,9 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 
 @Entity
 @Table(name = "passengers")
@@ -53,6 +56,8 @@ public class Passenger extends BaseEntity {
     @Column(name = "phone", length = 10)
     private String phone;
 
-    @ManyToMany(mappedBy = "passengers", fetch = FetchType.LAZY)
-    private List<Booking> bookings;
+    @JsonBackReference("booking-passengers")
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "booking_passengers", joinColumns = @JoinColumn(name = "passenger_id"), inverseJoinColumns = @JoinColumn(name = "booking_id"))
+    private List<Booking> bookings = new ArrayList<>();
 }

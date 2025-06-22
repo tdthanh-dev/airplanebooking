@@ -1,5 +1,6 @@
 package com.project.airplanebooking.controller;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.project.airplanebooking.dto.request.BookingDTO;
 import com.project.airplanebooking.dto.response.BookingResponse;
+import com.project.airplanebooking.dto.simpleresponse.SimpleBookingResponse;
 import com.project.airplanebooking.model.Booking;
 import com.project.airplanebooking.model.Flight;
 import com.project.airplanebooking.model.User;
@@ -64,6 +66,33 @@ public class BookingController {
         try {
             Booking booking = bookingServiceImpl.getBookingById(id);
             return ResponseEntity.ok(new BookingResponse(booking));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/simple/{id}")
+    public ResponseEntity<?> getBookingByIdSimple(@PathVariable Long id) {
+        try {
+            Booking booking = bookingServiceImpl.getBookingById(id);
+            BookingResponse response = new BookingResponse(booking);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/ultra-simple/{id}")
+    public ResponseEntity<?> getBookingByIdUltraSimple(@PathVariable Long id) {
+        try {
+            Booking booking = bookingServiceImpl.getBookingById(id);
+            SimpleBookingResponse response = new SimpleBookingResponse(
+                    booking.getId(),
+                    booking.getBookingReference(),
+                    booking.getStatus(),
+                    BigDecimal.valueOf(booking.getTotalPrice()),
+                    "Lấy thông tin đặt vé thành công");
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
@@ -190,6 +219,32 @@ public class BookingController {
         try {
             Booking booking = bookingServiceImpl.createBookingWithPassengers(bookingDTO);
             return ResponseEntity.ok(new BookingResponse(booking));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/simple")
+    public ResponseEntity<?> createBookingSimple(@Valid @RequestBody BookingDTO bookingDTO) {
+        try {
+            Booking booking = bookingServiceImpl.createBooking(bookingDTO);
+            return ResponseEntity.ok(new BookingResponse(booking));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/with-passengers/ultra-simple")
+    public ResponseEntity<?> createBookingWithPassengersUltraSimple(@Valid @RequestBody BookingDTO bookingDTO) {
+        try {
+            Booking booking = bookingServiceImpl.createBookingWithPassengers(bookingDTO);
+            SimpleBookingResponse response = new SimpleBookingResponse(
+                    booking.getId(),
+                    booking.getBookingReference(),
+                    booking.getStatus(),
+                    BigDecimal.valueOf(booking.getTotalPrice()),
+                    "Đặt vé thành công");
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }

@@ -7,7 +7,10 @@ import org.springframework.stereotype.Service;
 
 import com.project.airplanebooking.dto.request.PassengerDTO;
 import com.project.airplanebooking.exception.EntityNotFoundException;
+import com.project.airplanebooking.exception.ResourceNotFoundException;
+import com.project.airplanebooking.model.Booking;
 import com.project.airplanebooking.model.Passenger;
+import com.project.airplanebooking.repository.BookingRepository;
 import com.project.airplanebooking.repository.PassengerRepository;
 import com.project.airplanebooking.service.PassengerService;
 
@@ -15,21 +18,23 @@ import com.project.airplanebooking.service.PassengerService;
 public class PassengerServiceImpl implements PassengerService {
 
     private final PassengerRepository passengerRepository;
+    private final BookingRepository bookingRepository;
 
     @Autowired
-    public PassengerServiceImpl(PassengerRepository passengerRepository) {
+    public PassengerServiceImpl(PassengerRepository passengerRepository, BookingRepository bookingRepository) {
         this.passengerRepository = passengerRepository;
+        this.bookingRepository = bookingRepository;
     }
 
     @Override
-    public Passenger createPassenger(PassengerDTO passengerDTO) {
+    public Passenger createPassenger(PassengerDTO passengerDTO, Booking booking) {
         Passenger passenger = new Passenger();
         passenger.setFirstName(passengerDTO.getFirstName());
         passenger.setLastName(passengerDTO.getLastName());
         passenger.setPersonalId(passengerDTO.getPersonalId());
         passenger.setDateOfBirth(passengerDTO.getBirthDate());
         passenger.setGender(passengerDTO.getGender());
-
+        passenger.getBookings().add(booking);
         return passengerRepository.save(passenger);
     }
 
@@ -75,5 +80,13 @@ public class PassengerServiceImpl implements PassengerService {
     @Override
     public List<Passenger> getAllPassengers() {
         return passengerRepository.findAll();
+    }
+
+    @Override
+    public List<Passenger> getPassengersByBookingId(Long bookingId) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new ResourceNotFoundException("Booking not found with id: " + bookingId));
+
+        return passengerRepository.findByBooking(booking);
     }
 }
