@@ -18,12 +18,5 @@ public interface TicketService {
 
     List<Ticket> generateTicket(Long bookingId);
 
-    /**
-     * Tạo vé cho tất cả hành khách và chuyến bay của một booking
-     * Transaction mới và độc lập với booking transaction
-     * 
-     * @param bookingId ID của booking cần tạo vé
-     * @return Danh sách các vé đã tạo
-     */
     List<Ticket> generateAllTicketsForBooking(Long bookingId);
 }

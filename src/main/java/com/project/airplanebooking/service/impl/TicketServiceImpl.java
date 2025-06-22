@@ -88,7 +88,6 @@ public class TicketServiceImpl implements TicketService {
     }
 
     private String generateTicketNumber() {
-        // Tạo một mã ngẫu nhiên với tối đa 20 ký tự
         return "TK" + System.currentTimeMillis() % 10000000
                 + UUID.randomUUID().toString().substring(0, 4).toUpperCase();
     }
@@ -140,18 +139,14 @@ public class TicketServiceImpl implements TicketService {
         List<Flight> flights = new ArrayList<>(booking.getFlights());
         List<SeatFlight> seatFlights = new ArrayList<>(booking.getSeatFlights());
 
-        // Sắp xếp chuyến bay theo thời gian khởi hành
         flights.sort((f1, f2) -> f1.getDepartureTime().compareTo(f2.getDepartureTime()));
 
-        // Đối với mỗi hành khách, tạo vé cho mỗi chuyến bay
         for (Passenger passenger : passengers) {
-            // Đếm số chuyến bay mà hành khách này sẽ đi
             int passengerFlightCount = "ROUND_TRIP".equals(booking.getTripType()) ? 2 : 1;
 
             for (int i = 0; i < passengerFlightCount; i++) {
                 Flight flight = flights.get(i);
 
-                // Tìm ghế phù hợp cho hành khách và chuyến bay này
                 SeatFlight passengerSeat = null;
                 for (SeatFlight seatFlight : seatFlights) {
                     if (seatFlight.getFlight().getId().equals(flight.getId())
@@ -167,10 +162,8 @@ public class TicketServiceImpl implements TicketService {
                             " trên chuyến bay " + flight.getFlightNo());
                 }
 
-                // Đánh dấu ghế này đã được sử dụng
                 seatFlights.remove(passengerSeat);
 
-                // Tạo vé
                 Ticket ticket = new Ticket();
                 ticket.setTicketNumber(generateTicketNumber());
                 ticket.setBooking(booking);
@@ -180,7 +173,7 @@ public class TicketServiceImpl implements TicketService {
                 ticket.setTicketPrice(passengerSeat.getPrice());
                 ticket.setTicketClass(passengerSeat.getSeatType());
                 ticket.setTicketType(booking.getTripType());
-                ticket.setLegNumber(i + 1); // Chuyến đi số mấy (1: đi, 2: về)
+                ticket.setLegNumber(i + 1); // 1 là đi, 2 là về
                 ticket.setStatus("ACTIVE");
 
                 Ticket savedTicket = ticketRepository.save(ticket);
