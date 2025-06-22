@@ -328,21 +328,25 @@ public class BookingServiceImpl implements BookingService {
 
         booking.setStatus("CONFIRMED");
 
+        // Kiểm tra xem tất cả các ghế có sẵn để đặt không
         for (SeatFlight seatFlight : booking.getSeatFlights()) {
-            if ("HOLD".equals(seatFlight.getStatus())) {
-                seatFlight.setStatus("BOOKED");
-                seatFlightRepository.save(seatFlight);
+            SeatFlight currentState = seatFlightRepository.findById(seatFlight.getId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Seat not found: " + seatFlight.getId()));
+
+            if (!"HOLD".equals(currentState.getStatus())) {
+                throw new BadRequestException("Seat " + seatFlight.getId() + " is not in HOLD status");
             }
+        }
+
+        // Cập nhật trạng thái ghế
+        for (SeatFlight seatFlight : booking.getSeatFlights()) {
+            seatFlight.setStatus("BOOKED");
+            seatFlightRepository.save(seatFlight);
         }
 
         Booking savedBooking = bookingRepository.save(booking);
 
-        try {
-            ticketService.generateAllTicketsForBooking(savedBooking.getId());
-        } catch (Exception e) {
-            System.err.println("Lỗi tạo vé tự động cho booking " + savedBooking.getId() + ": " + e.getMessage());
-        }
-
+        // Không cố gắng sinh vé trong cùng transaction
         return savedBooking;
     }
 
