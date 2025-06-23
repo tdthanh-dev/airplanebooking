@@ -46,4 +46,7 @@ public class BookingDTO {
 
     @Size(max = 255, message = "Cancellation reason must be at most 255 characters")
     private String cancellationReason;
+
+    @Size(max = 1000, message = "Note must be at most 1000 characters")
+    private String note;
 }

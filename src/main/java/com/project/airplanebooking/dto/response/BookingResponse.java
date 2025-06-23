@@ -30,6 +30,7 @@ public class BookingResponse {
         private Integer passengerCount;
         private String tripType;
         private String bookingSource;
+        private String note;
         private String promotionCode;
         private String cancellationReason;
         private LocalDateTime createdAt;
@@ -73,6 +74,7 @@ public class BookingResponse {
                 this.passengerCount = booking.getPassengerCount();
                 this.tripType = booking.getTripType();
                 this.bookingSource = booking.getBookingSource();
+                this.note = booking.getNote();
                 this.promotionCode = booking.getPromotionCode();
                 this.cancellationReason = booking.getCancellationReason();
                 this.createdAt = booking.getCreatedAt();

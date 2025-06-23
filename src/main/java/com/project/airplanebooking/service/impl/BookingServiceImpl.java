@@ -174,6 +174,7 @@ public class BookingServiceImpl implements BookingService {
         booking.setPromotionCode(bookingDTO.getPromotionCode() != null ? bookingDTO.getPromotionCode() : "");
         booking.setCancellationReason("");
         booking.setFlights(flights);
+        booking.setNote(bookingDTO.getNote() != null ? bookingDTO.getNote() : "");
 
         // Lưu booking trước để có ID
         Booking savedBooking = bookingRepository.save(booking);
