@@ -78,6 +78,6 @@ public class Booking extends BaseEntity {
     @Column(name = "cancellation_reason", nullable = false, length = 255)
     private String cancellationReason;
 
-    @Column(name = "note", nullable = false, length = 1000)
+    @Column(name = "note", nullable = true, length = 1000)
     private String note;
 }
