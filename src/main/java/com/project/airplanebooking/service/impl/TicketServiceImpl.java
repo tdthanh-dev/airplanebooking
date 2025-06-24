@@ -188,4 +188,9 @@ public class TicketServiceImpl implements TicketService {
     public List<Ticket> generateAllTicketsForBooking(Long bookingId) {
         return generateTicket(bookingId);
     }
+
+    @Override
+    public List<Ticket> getTicketsByBookingId(Long bookingId) {
+        return ticketRepository.findByBookingId(bookingId);
+    }
 }

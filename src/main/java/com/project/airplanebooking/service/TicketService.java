@@ -19,4 +19,7 @@ public interface TicketService {
     List<Ticket> generateTicket(Long bookingId);
 
     List<Ticket> generateAllTicketsForBooking(Long bookingId);
+
+    List<Ticket> getTicketsByBookingId(Long bookingId);
+
 }

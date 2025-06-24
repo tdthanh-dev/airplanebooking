@@ -15,10 +15,10 @@ import lombok.NoArgsConstructor;
 public class TicketResponse {
     private Long id;
     private String ticketNumber;
-    private BookingResponse booking;
-    private FlightResponse flight;
-    private PassengerResponse passenger;
-    private SeatFlightResponse seatFlight;
+    private Long bookingId;
+    private Long flightId;
+    private Long passengerId;
+    private Long seatFlightId;
     private String status;
     private BigDecimal price;
     private LocalDateTime issueDate;
@@ -34,10 +34,10 @@ public class TicketResponse {
     public TicketResponse(Ticket ticket) {
         this.id = ticket.getId();
         this.ticketNumber = ticket.getTicketNumber();
-        this.booking = new BookingResponse(ticket.getBooking());
-        this.flight = new FlightResponse(ticket.getFlight());
-        this.passenger = new PassengerResponse(ticket.getPassenger());
-        this.seatFlight = new SeatFlightResponse(ticket.getSeatFlight());
+        this.bookingId = ticket.getBooking().getId();
+        this.flightId = ticket.getFlight().getId();
+        this.passengerId = ticket.getPassenger().getId();
+        this.seatFlightId = ticket.getSeatFlight().getId();
         this.status = ticket.getStatus();
         this.price = BigDecimal.valueOf(ticket.getTicketPrice());
         this.issueDate = ticket.getCreatedAt();

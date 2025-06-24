@@ -104,4 +104,18 @@ public class TicketController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
+
+    @GetMapping("/booking/{bookingId}")
+    public ResponseEntity<?> getTicketsByBookingId(@PathVariable Long bookingId) {
+        try {
+            List<Ticket> tickets = ticketServiceImpl.getTicketsByBookingId(bookingId);
+            List<TicketResponse> responseList = tickets.stream()
+                    .map(TicketResponse::new)
+                    .collect(Collectors.toList());
+            return ResponseEntity.ok(responseList);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
 }

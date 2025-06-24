@@ -32,6 +32,8 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
     // Tìm vé theo booking reference
     List<Ticket> findByBookingBookingReference(String bookingReference);
 
+    List<Ticket> findByBookingId(Long bookingId);
+
     // Tìm vé theo status
     List<Ticket> findByStatus(String status);
 }
