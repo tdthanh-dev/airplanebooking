@@ -42,23 +42,4 @@ public class AuthController {
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
-    @PostMapping("/send-otp")
-    public ResponseEntity<String> sendOtp(@Valid @RequestBody OtpRequest request) {
-        try {
-            authService.sendLoginOtp(request.getEmail());
-            return new ResponseEntity<>("OTP đã được gửi đến email của bạn", HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
-        }
-    }
-
-    @PostMapping("/verify-otp")
-    public ResponseEntity<JwtAuthenticationResponse> verifyOtp(@Valid @RequestBody OtpVerificationRequest request) {
-        try {
-            JwtAuthenticationResponse response = authService.verifyOtpAndLogin(request);
-            return new ResponseEntity<>(response, HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
-        }
-    }
 }

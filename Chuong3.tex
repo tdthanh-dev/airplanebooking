@@ -1,0 +1,575 @@
+\section{Công nghệ sử dụng}
+
+\subsection{Tổng quan công nghệ}
+Dự án AirBook được phát triển trên nền tảng công nghệ hiện đại với các thành phần chính:
+
+\begin{itemize}[leftmargin=1cm]
+    \item \textbf{Nền tảng:} Ứng dụng Android sử dụng Jetpack Compose cho UI
+    \item \textbf{Backend:} Hệ thống RESTful API được xây dựng trên Spring Boot framework
+    \item \textbf{CSDL:} PostgreSQL quản lý thông tin người dùng, dữ liệu chuyến bay và lịch sử đặt vé
+    \item \textbf{Tích hợp:} API mô phỏng cho việc lấy dữ liệu chuyến bay và xử lý thanh toán
+\end{itemize}
+
+\subsection{Backend}
+
+\subsubsection{Spring Boot}
+Spring Boot được lựa chọn làm framework chính cho phát triển backend vì:
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.5\textwidth]{images/spring_boot_logo.png}
+\caption{Logo Spring Boot}
+\end{figure}
+
+Spring Boot là một framework Java mã nguồn mở phát triển bởi Pivotal Team (nay là VMware), giúp xây dựng các ứng dụng dựa trên nền tảng Spring nhanh chóng và dễ dàng. Ra mắt vào năm 2014, Spring Boot giải quyết vấn đề cấu hình phức tạp của Spring truyền thống bằng cách sử dụng nguyên lý "convention over configuration" và auto-configuration.
+
+\begin{itemize}[leftmargin=1cm]
+    \item \textbf{Tính module:} Dễ dàng tích hợp với các thành phần khác như security, data JPA
+    \item \textbf{Auto-configuration:} Giảm thiểu cấu hình phức tạp, tăng tốc phát triển
+    \item \textbf{Embedded server:} Tomcat được tích hợp sẵn, thuận tiện cho deployment
+    \item \textbf{Spring Data JPA:} Cung cấp abstraction layer cho thao tác với CSDL
+\end{itemize}
+
+Kiến trúc REST API của backend được thiết kế theo mô hình MVC với controller xử lý request, service layer xử lý logic nghiệp vụ và repository layer tương tác với CSDL.
+
+\subsubsection{PostgreSQL}
+PostgreSQL được chọn làm hệ quản trị CSDL vì:
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.6\textwidth]{images/postgresql_logo.png}
+\caption{Logo PostgreSQL}
+\end{figure}
+
+PostgreSQL là hệ quản trị cơ sở dữ liệu quan hệ mã nguồn mở tiên tiến, được phát triển từ năm 1986 tại Đại học California Berkeley. Nổi tiếng với độ ổn định, tính năng phong phú và tuân thủ các chuẩn SQL, PostgreSQL hỗ trợ cả kiểu dữ liệu quan hệ truyền thống và NoSQL như JSON/JSONB.
+
+\begin{itemize}[leftmargin=1cm]
+    \item \textbf{Khả năng mở rộng:} Hỗ trợ tốt khi dữ liệu tăng trưởng
+    \item \textbf{Tính toàn vẹn:} Hỗ trợ ACID transactions và foreign key constraints
+    \item \textbf{Tính năng hiện đại:} JSON support, full-text search và indexing
+    \item \textbf{Miễn phí:} Open-source, không có giới hạn về license
+\end{itemize}
+
+Spring Boot kết nối với PostgreSQL thông qua Spring Data JPA và Hibernate ORM.
+
+\subsubsection{RESTful API}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=1\textwidth]{images/kien_truc_restful_api.png}
+\caption{Kiến trúc RESTful API}
+\end{figure}
+
+REST (Representational State Transfer) là một kiến trúc phần mềm được Roy Fielding giới thiệu năm 2000, định nghĩa cách thức các hệ thống phân tán có thể giao tiếp qua HTTP. RESTful API sử dụng các phương thức HTTP tiêu chuẩn (GET, POST, PUT, DELETE) và trả về dữ liệu dưới dạng JSON hoặc XML, cho phép các hệ thống độc lập tương tác với nhau một cách đơn giản và thống nhất.
+
+API của AirBook được thiết kế theo nguyên tắc RESTful với các endpoint:
+
+\begin{itemize}[leftmargin=1cm]
+    \item \textbf{/api/flights:} Quản lý thông tin chuyến bay (search, get, filter)
+    \item \textbf{/api/bookings:} Quản lý đặt vé (create, update, cancel)
+    \item \textbf{/api/users:} Quản lý người dùng (register, profile, history)
+    \item \textbf{/api/auth:} Xác thực và phân quyền
+\end{itemize}
+
+API được tài liệu hóa sử dụng OpenAPI (Swagger) để dễ dàng tích hợp và test.
+
+
+\subsubsection{OpenAPI Swagger}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.7\textwidth]{images/openapi_swagger_logo.png}
+\caption{Logo OpenAPI Swagger}
+\end{figure}
+
+OpenAPI Specification (trước đây được gọi là Swagger) là một định dạng mô tả API chuẩn, giúp các nhà phát triển dễ dàng tài liệu hóa, khám phá và tương tác với các API của họ. AirBook sử dụng SpringDoc OpenAPI để tự động tạo tài liệu API từ mã nguồn, cung cấp tài liệu đầy đủ và UI tương tác cho toàn bộ hệ thống API.
+
+\begin{itemize}[leftmargin=1cm]
+    \item \textbf{Swagger UI:} Cung cấp giao diện trực quan để khám phá và thử nghiệm API
+    \item \textbf{Tự động tạo tài liệu:} Sử dụng annotations trong mã để tạo tài liệu chi tiết
+    \item \textbf{API schema:} Định nghĩa rõ ràng các request, response và data models
+    \item \textbf{Môi trường test:} Cho phép thử nghiệm API trực tiếp từ giao diện web
+\end{itemize}
+
+\subsubsection{Spring Security và JWT}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.5\textwidth]{images/spring_security_logo.png}
+\caption{Logo Spring Security}
+\end{figure}
+
+AirBook sử dụng Spring Security kết hợp với JWT (JSON Web Tokens) để xây dựng hệ thống xác thực và phân quyền bảo mật. Spring Security là một framework bảo mật mạnh mẽ cho các ứng dụng Java, cung cấp nhiều tính năng như xác thực, phân quyền và bảo vệ khỏi các cuộc tấn công phổ biến.
+
+\begin{itemize}[leftmargin=1cm]
+    \item \textbf{JWT Authentication:} Sử dụng tokens mã hóa để xác thực người dùng thay vì phiên truyền thống
+    \item \textbf{Stateless API:} Cho phép API không lưu trạng thái (stateless), dễ dàng mở rộng
+    \item \textbf{Role-Based Access Control:} Phân quyền chi tiết dựa trên vai trò người dùng (USER, ADMIN)
+    \item \textbf{Password Encoding:} Mã hóa mật khẩu với BCrypt để đảm bảo an toàn dữ liệu người dùng
+    \item \textbf{CORS Configuration:} Cấu hình Cross-Origin Resource Sharing để cho phép frontend tương tác an toàn với API
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.6\textwidth]{images/jwt_logo.png}
+\caption{Logo JWT (JSON Web Tokens)}
+\end{figure}
+
+JWT là một chuẩn mở (RFC 7519) dùng để truyền thông tin một cách an toàn dưới dạng đối tượng JSON. Thông tin này được xác thực và tin cậy vì nó được ký số. AirBook sử dụng JWT để xác thực người dùng và duy trì trạng thái đăng nhập mà không cần lưu trữ phiên trên server.
+
+\subsubsection{JavaMail API}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.7\textwidth]{images/Java_mail_Overview.png}
+\caption{JavaMail API Overview}
+\end{figure}
+
+AirBook tích hợp Spring Mail (dựa trên JavaMail API) để gửi các email thông báo tự động đến người dùng. Hệ thống email được thiết kế để thông báo về các sự kiện quan trọng như xác nhận đặt vé, nhắc nhở chuyến bay, thay đổi lịch trình, và phục hồi mật khẩu.
+
+\begin{itemize}[leftmargin=1cm]
+    \item \textbf{Email Templates:} Sử dụng Thymeleaf để tạo các mẫu email động và chuyên nghiệp
+    \item \textbf{Email Scheduling:} Lập lịch gửi email tự động trước chuyến bay
+    \item \textbf{Email Verification:} Xác minh địa chỉ email của người dùng khi đăng ký
+    \item \textbf{Asynchronous Sending:} Gửi email không đồng bộ để không làm chậm API responses
+\end{itemize}
+
+
+\subsection{Frontend}
+
+\subsubsection{Kotlin}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.3\textwidth]{images/kotlin_logo.png}
+\caption{Logo Kotlin}
+\end{figure}
+
+Kotlin là ngôn ngữ lập trình chính thức được Google khuyến nghị cho phát triển ứng dụng Android từ năm 2019. Được phát triển bởi JetBrains, Kotlin giải quyết nhiều hạn chế của Java đồng thời duy trì tương thích hoàn toàn với hệ sinh thái Java. AirBook sử dụng Kotlin phiên bản 2.0.21 với các tính năng hiện đại.
+
+\begin{itemize}[leftmargin=1cm]
+    \item \textbf{Ngắn gọn và biểu cảm:} Giảm mã nguồn trùng lặp so với Java
+    \item \textbf{Null safety:} Giảm thiểu lỗi NullPointerException với hệ thống kiểu nullable
+    \item \textbf{Coroutines:} Lập trình bất đồng bộ đơn giản và hiệu quả
+    \item \textbf{Extension functions:} Mở rộng lớp mà không cần kế thừa
+    \item \textbf{Flow API:} Hỗ trợ reactive programming để xử lý luồng dữ liệu bất đồng bộ
+\end{itemize}
+
+\subsubsection{Jetpack Compose}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.5\textwidth]{images/Jetpack_Compose_logo.png}
+\caption{Logo Jetpack Compose}
+\end{figure}
+
+Jetpack Compose là toolkit hiện đại dành cho xây dựng giao diện người dùng Android, được Google ra mắt chính thức vào năm 2021. Khác với phương pháp truyền thống sử dụng XML, Compose sử dụng cách tiếp cận khai báo (declarative) với Kotlin, cho phép xây dựng UI chỉ bằng cách mô tả trạng thái giao diện, không cần quan tâm đến việc cập nhật UI khi dữ liệu thay đổi.
+
+AirBook sử dụng Jetpack Compose (phiên bản BOM 2024.09.00) vì những ưu điểm:
+
+\begin{itemize}[leftmargin=1cm]
+    \item \textbf{Declarative UI:} Đơn giản hóa quá trình xây dựng UI phức tạp
+    \item \textbf{Hiệu suất cao:} Tối ưu hóa rendering và animations
+    \item \textbf{Material Design 3:} Tích hợp sẵn với ngôn ngữ thiết kế mới nhất của Google
+    \item \textbf{State Management:} Quản lý trạng thái UI hiệu quả với remember, mutableStateOf, và collectAsState
+    \item \textbf{Compose Preview:} Xem trước giao diện ngay trong IDE mà không cần chạy ứng dụng
+    \item \textbf{Animation APIs:} API animation mạnh mẽ để tạo trải nghiệm động và hấp dẫn
+\end{itemize}
+
+\subsubsection{Dagger Hilt}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=1\textwidth]{images/Dagger_Hilt_DI.png}
+\caption{Dagger Hilt cho Android, Dependency Injection (DI)}
+\end{figure}
+
+AirBook sử dụng Dagger Hilt (phiên bản 2.56.2) - giải pháp Dependency Injection (DI) chính thức của Android dựa trên Dagger. Hilt đơn giản hóa việc thiết lập DI thông qua annotations và integration tự động với các components của Android như Activity và ViewModel.
+
+\begin{itemize}[leftmargin=1cm]
+    \item \textbf{Android Component Integration:} Tích hợp sẵn với vòng đời của các component Android
+    \item \textbf{Testing:} Dễ dàng thay thế dependencies trong quá trình kiểm thử
+    \item \textbf{Scope Management:} Quản lý phạm vi của dependencies (@Singleton, @ActivityScoped)
+    \item \textbf{Navigation Integration:} Hỗ trợ tích hợp với Navigation Compose (Hilt Navigation Compose)
+\end{itemize}
+
+\subsubsection{Retrofit và Networking}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.7\textwidth]{images/retrofit_lib.png}
+\caption{Retrofit - Modern Network Calls trong Android}
+\end{figure}
+
+Retrofit (phiên bản 3.0.0) là thư viện HTTP client được phát triển bởi Square, Inc., giúp đơn giản hóa quá trình gọi API trong ứng dụng Android. AirBook sử dụng Retrofit kết hợp với Kotlin Coroutines để xử lý các yêu cầu mạng một cách bất đồng bộ và hiệu quả.
+
+\begin{itemize}[leftmargin=1cm]
+    \item \textbf{Type-safe API interfaces:} Định nghĩa API endpoints bằng Kotlin interfaces
+    \item \textbf{Converter:} Sử dụng GSON để chuyển đổi giữa JSON và Kotlin data classes
+    \item \textbf{Coroutines Support:} Tích hợp với suspend functions để gọi API không chặn UI thread
+    \item \textbf{Request Interceptors:} Cấu hình các interceptors để thêm headers (như JWT) vào mọi request
+\end{itemize}
+
+\subsubsection{Navigation Compose}
+
+AirBook sử dụng Navigation Compose (phiên bản 2.7.7) để quản lý điều hướng giữa các màn hình trong ứng dụng. Framework này cung cấp cách tiếp cận declarative để xác định và điều hướng giữa các composable destinations.
+
+\begin{itemize}[leftmargin=1cm]
+    \item \textbf{NavHost và NavController:} Quản lý điều hướng và back stack
+    \item \textbf{Type-safe Arguments:} Truyền đối số giữa các màn hình an toàn về kiểu dữ liệu
+    \item \textbf{Deep Links:} Hỗ trợ deep linking để mở ứng dụng từ các nguồn bên ngoài
+    \item \textbf{Animations:} Hiệu ứng chuyển tiếp mượt mà giữa các màn hình
+    \item \textbf{Bottom Navigation:} Tích hợp với thanh điều hướng dạng tab dưới cùng màn hình
+\end{itemize}
+
+\subsubsection{DataStore Preferences}
+
+AirBook sử dụng DataStore Preferences (phiên bản 1.0.0) - giải pháp lưu trữ dữ liệu nhẹ, thay thế cho SharedPreferences. DataStore được thiết kế để lưu trữ dữ liệu cặp khóa-giá trị một cách bất đồng bộ, an toàn với giao dịch và tương thích với Coroutines.
+
+\begin{itemize}[leftmargin=1cm]
+    \item \textbf{Flow API:} Sử dụng Kotlin Flows để quan sát thay đổi dữ liệu
+    \item \textbf{Type Safety:} Lưu trữ và truy xuất dữ liệu với kiểu an toàn
+    \item \textbf{Transaction Support:} Các thao tác ghi được đảm bảo nguyên tử
+    \item \textbf{Storage:} Lưu trữ thông tin người dùng, cài đặt ứng dụng và token xác thực
+\end{itemize}
+
+\subsubsection{Các thư viện phụ trợ}
+
+AirBook còn tận dụng nhiều thư viện Android hiện đại khác:
+
+\begin{itemize}[leftmargin=1cm]
+    \item \textbf{Lifecycle Components:} ViewModel, LiveData và Lifecycle-aware components
+    \item \textbf{Material 3:} Ngôn ngữ thiết kế mới nhất của Google với Dynamic Color trên Android 12+
+    \item \textbf{Coil:} Thư viện tải và hiển thị hình ảnh hiệu quả với Compose
+    \item \textbf{Testing:} JUnit, Espresso và Compose Testing cho kiểm thử đơn vị và UI
+\end{itemize}
+
+\section{Tiêu chí kỹ thuật và đánh giá}
+
+\subsection{Tiêu chí kỹ thuật}
+Hệ thống cần đạt được các tiêu chí kỹ thuật sau:
+
+\begin{itemize}[leftmargin=1cm]
+    \item Ứng dụng hoạt động ổn định trên các thiết bị Android phổ biến (Android 7.0+)
+    \item Thời gian phản hồi API trung bình dưới 2 giây cho các thao tác chính
+    \item Giao diện responsive, mượt mà và không xảy ra lỗi trong quá trình sử dụng
+    \item Dữ liệu được đồng bộ hóa chính xác giữa frontend và backend
+    \item Xử lý được tối thiểu 100 concurrent users trong môi trường test
+\end{itemize}
+
+\subsection{Phương pháp đánh giá}
+Các phương pháp đánh giá hệ thống bao gồm:
+
+\begin{itemize}[leftmargin=1cm]
+    \item \textbf{Unit Testing:} Kiểm tra từng component code riêng lẻ
+    \item \textbf{Integration Testing:} Kiểm tra tương tác giữa các module
+    \item \textbf{UI Testing:} Sử dụng Espresso và Compose Testing để kiểm tra giao diện
+    \item \textbf{Performance Testing:} Đo thời gian phản hồi và sử dụng tài nguyên
+    \item \textbf{Usability Testing:} Thu thập phản hồi từ người dùng thử nghiệm
+\end{itemize}
+
+\section{Kiến trúc hệ thống}
+\subsection{Mô hình tổng quan}
+Hệ thống AirBook được thiết kế theo kiến trúc client-server với frontend Android giao tiếp với backend thông qua RESTful API. Kiến trúc này cho phép tách biệt logic nghiệp vụ và presentation, giúp dễ dàng bảo trì và mở rộng.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=1\textwidth]{images/System_Architecture_Overview.drawio.png}
+\caption{Sơ đồ kiến trúc tổng quan hệ thống AirBook}
+\end{figure}
+
+Như minh họa trong sơ đồ, kiến trúc hệ thống AirBook bao gồm các thành phần chính:
+
+\begin{itemize}[leftmargin=1cm]
+    \item \textbf{Phần Client} (bên trái): Gồm hai thành phần chính:
+    \begin{itemize}
+        \item \textbf{Người dùng}: Tương tác với ứng dụng qua giao diện điện thoại
+        \item \textbf{Ứng dụng Jetpack Compose}: Frontend được xây dựng bằng Kotlin và Jetpack Compose, hiển thị giao diện và xử lý tương tác người dùng
+    \end{itemize}
+    
+    \item \textbf{Tầng Giao tiếp API} (ở giữa):
+    \begin{itemize}
+        \item \textbf{REST API}: Sử dụng Retrofit/OkHttp ở phía client để gửi/nhận các request/response dạng JSON
+        \item Đóng vai trò cầu nối giữa frontend và backend với các endpoints được định nghĩa rõ ràng
+    \end{itemize}
+    
+    \item \textbf{Cloud/Server} (bên phải): Chứa các thành phần:
+    \begin{itemize}
+        \item \textbf{Spring Boot}: Framework backend chính, xử lý các request từ client
+        \item \textbf{Spring Security & JWT}: Quản lý xác thực và phân quyền
+        \item \textbf{JavaMail API}: Xử lý gửi email thông báo
+        \item \textbf{Swagger}: Tài liệu hóa và kiểm thử API
+    \end{itemize}
+    
+    \item \textbf{Cơ sở dữ liệu} (dưới cùng):
+    \begin{itemize}
+        \item \textbf{PostgreSQL}: Lưu trữ tất cả dữ liệu của hệ thống, bao gồm thông tin người dùng, chuyến bay và đặt vé
+        \item Được truy cập bởi Spring Boot thông qua Spring Data JPA
+    \end{itemize}
+\end{itemize}
+
+Mũi tên trong sơ đồ biểu thị luồng dữ liệu và tương tác giữa các thành phần: từ người dùng tương tác với giao diện, qua REST API, đến xử lý phía server và lưu trữ trong cơ sở dữ liệu.
+
+\subsection{Kiến trúc phân lớp(Biến thể MVC)}
+Backend của AirBook được tổ chức theo mô hình 3 lớp:
+
+\begin{itemize}[leftmargin=1cm]
+    \item \textbf{Presentation Layer:} Controllers xử lý HTTP requests và responses
+    \item \textbf{Business Logic Layer:} Services thực hiện logic nghiệp vụ và validation
+    \item \textbf{Data Access Layer:} Repositories tương tác với database và external APIs
+\end{itemize}
+
+Cấu trúc này giúp giảm thiểu sự phụ thuộc giữa các thành phần, dễ dàng test và mở rộng từng lớp riêng biệt.
+
+\subsection{Mô hình MVVM}
+Frontend Android áp dụng mô hình MVVM (Model-View-ViewModel):
+
+\begin{itemize}[leftmargin=1cm]
+    \item \textbf{Model:} Đại diện cho dữ liệu và business logic
+    \item \textbf{View:} Composable functions tạo UI và xử lý user input
+    \item \textbf{ViewModel:} Trung gian giữa Model và View, quản lý UI state và business logic
+\end{itemize}
+
+MVVM kết hợp với Jetpack Compose giúp xây dựng UI reactive, dễ dàng cập nhật theo sự thay đổi của dữ liệu.
+
+\subsection{Luồng dữ liệu}
+
+\begin{figure}[H]
+\centering
+% Placeholder cho sơ đồ luồng dữ liệu
+\caption{Sơ đồ luồng dữ liệu trong hệ thống AirBook}
+\end{figure}
+
+Luồng dữ liệu chính:
+\begin{enumerate}
+    \item User tương tác với UI trên ứng dụng Android
+    \item ViewModel xử lý action và gọi Repository
+    \item Repository thực hiện API calls thông qua Retrofit
+    \item Backend Controller nhận request và chuyển cho Service xử lý
+    \item Service thực hiện business logic và gọi Repository
+    \item Repository truy vấn PostgreSQL và trả kết quả
+    \item Dữ liệu được trả về theo chiều ngược lại
+    \item UI được cập nhật dựa trên state mới từ ViewModel
+\end{enumerate}
+
+\section{Thiết kế cơ sở dữ liệu}
+
+\subsection{Sơ đồ thực thể quan hệ (ERD)}
+
+\begin{figure}[H]
+\centering
+% Placeholder cho ERD
+\caption{Sơ đồ ERD của hệ thống AirBook}
+\end{figure}
+
+\subsection{Cấu trúc bảng}
+Hệ thống CSDL gồm các bảng chính:
+
+\begin{itemize}[leftmargin=1cm]
+    \item \textbf{users:} Thông tin người dùng và authentication
+    \item \textbf{flights:} Thông tin chuyến bay (mã, ngày giờ, điểm đi/đến)
+    \item \textbf{airlines:} Thông tin hãng hàng không
+    \item \textbf{bookings:} Thông tin đặt vé
+    \item \textbf{passengers:} Thông tin hành khách liên quan đến booking
+    \item \textbf{payments:} Thông tin thanh toán
+    \item \textbf{seats:} Quản lý chỗ ngồi và loại ghế
+\end{itemize}
+
+\subsection{Quan hệ và ràng buộc}
+Các quan hệ chính trong CSDL:
+
+\begin{itemize}[leftmargin=1cm]
+    \item Một user có nhiều booking (1:n)
+    \item Một booking có nhiều passenger (1:n)
+    \item Một booking liên kết với một flight (n:1)
+    \item Một flight thuộc về một airline (n:1)
+    \item Một booking có một payment (1:1)
+    \item Một booking có nhiều seat assignment (1:n)
+\end{itemize}
+
+Các ràng buộc toàn vẹn:
+\begin{itemize}[leftmargin=1cm]
+    \item Foreign key constraints đảm bảo dữ liệu tham chiếu chính xác
+    \item Check constraints với booking status chỉ chấp nhận giá trị hợp lệ
+    \item Unique constraints đảm bảo không trùng lặp mã chuyến bay, booking
+    \item Not null constraints cho các trường bắt buộc
+\end{itemize}
+
+\section{Thiết kế chi tiết}
+
+\subsection{Chức năng tìm kiếm chuyến bay}
+
+\subsubsection{Mô tả chức năng}
+Chức năng tìm kiếm chuyến bay là một trong những tính năng quan trọng nhất của hệ thống, cho phép người dùng:
+
+\begin{itemize}[leftmargin=1cm]
+    \item Tìm kiếm chuyến bay theo điểm đi, điểm đến
+    \item Chọn ngày khởi hành linh hoạt (một chiều hoặc khứ hồi)
+    \item Lọc theo giờ bay, hãng hàng không, giá vé
+    \item So sánh giá vé từ nhiều hãng hàng không khác nhau
+\end{itemize}
+
+\subsubsection{Thuật toán tìm kiếm và sắp xếp kết quả}
+Thuật toán tìm kiếm kết hợp nhiều tiêu chí:
+
+\begin{itemize}[leftmargin=1cm]
+    \item Full-text search cho điểm đi/đến sử dụng indexing
+    \item Filtering và matching theo các tiêu chí người dùng chọn
+    \item Sắp xếp kết quả theo giá, thời gian bay, hoặc sự phổ biến
+    \item Caching kết quả tìm kiếm để cải thiện hiệu suất
+\end{itemize}
+
+\subsubsection{Giao diện người dùng}
+Giao diện tìm kiếm được thiết kế với nguyên tắc Material Design:
+
+\begin{itemize}[leftmargin=1cm]
+    \item Form tìm kiếm đơn giản với các trường nhập liệu chính
+    \item Datepicker tối ưu cho mobile touch screen
+    \item Kết quả tìm kiếm hiển thị dạng card với thông tin trực quan
+    \item Filter panel cho phép tinh chỉnh kết quả nhanh chóng
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+% Placeholder cho UI tìm kiếm
+\caption{Giao diện tìm kiếm chuyến bay}
+\end{figure}
+
+\subsection{Chức năng đặt vé}
+
+\subsubsection{Quy trình đặt vé}
+Quy trình đặt vé được thiết kế gồm 4 bước chính:
+
+\begin{enumerate}
+    \item Chọn chuyến bay từ kết quả tìm kiếm
+    \item Nhập thông tin hành khách
+    \item Chọn chỗ ngồi và dịch vụ bổ sung
+    \item Thanh toán và nhận xác nhận
+\end{enumerate}
+
+Thiết kế này giúp tối ưu hóa trải nghiệm đặt vé, giảm tỷ lệ bỏ dở giữa chừng.
+
+\subsubsection{Xử lý thanh toán}
+Hệ thống thanh toán được thiết kế:
+
+\begin{itemize}[leftmargin=1cm]
+    \item Mô phỏng các phương thức thanh toán phổ biến (thẻ, chuyển khoản)
+    \item Lưu trữ thông tin thanh toán an toàn thông qua encryption
+    \item Xử lý transaction với atomicity để tránh lỗi thanh toán
+    \item Thông báo status realtime cho người dùng
+\end{itemize}
+
+\subsubsection{Giao diện người dùng}
+Giao diện đặt vé tập trung vào:
+
+\begin{itemize}[leftmargin=1cm]
+    \item Step indicator rõ ràng cho người dùng biết họ đang ở bước nào
+    \item Form validation realtime để giảm thiểu lỗi nhập liệu
+    \item Responsive design cho phép sử dụng trên nhiều kích thước màn hình
+    \item Visual feedback rõ ràng cho mỗi hành động
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+% Placeholder cho UI đặt vé
+\caption{Quy trình đặt vé trên AirBook}
+\end{figure}
+
+\subsection{Quản lý thông tin người dùng}
+
+\subsubsection{Đăng ký và đăng nhập}
+Hệ thống authentication:
+
+\begin{itemize}[leftmargin=1cm]
+    \item JWT-based authentication cho API
+    \item Secure password storage với bcrypt hashing
+    \item Social login options (Google, Facebook)
+    \item Two-factor authentication cho tài khoản
+\end{itemize}
+
+\subsubsection{Quản lý đặt chỗ}
+Người dùng có thể:
+
+\begin{itemize}[leftmargin=1cm]
+    \item Xem danh sách đặt chỗ hiện tại và lịch sử
+    \item Check-in online trước chuyến bay
+    \item Thay đổi hoặc hủy đặt chỗ (theo policy)
+    \item Nhận thông báo về thay đổi lịch trình
+\end{itemize}
+
+\subsubsection{Lịch sử giao dịch}
+Hệ thống lưu trữ:
+
+\begin{itemize}[leftmargin=1cm]
+    \item Lịch sử đầy đủ các giao dịch đặt vé
+    \item Chi tiết thanh toán và hóa đơn điện tử
+    \item Thống kê chi tiêu theo thời gian
+    \item Chức năng tìm kiếm và lọc giao dịch
+\end{itemize}
+
+\section{Bảo mật và xử lý lỗi}
+
+\subsection{Bảo mật dữ liệu người dùng}
+Các biện pháp bảo mật:
+
+\begin{itemize}[leftmargin=1cm]
+    \item HTTPS/TLS cho mọi kết nối API
+    \item Encryption dữ liệu nhạy cảm trong database
+    \item Access control với role-based authorization
+    \item OWASP security guidelines tuân thủ
+    \item Rate limiting để ngăn chặn brute force attacks
+\end{itemize}
+
+\subsection{Xử lý lỗi và ngoại lệ}
+Cơ chế xử lý lỗi:
+
+\begin{itemize}[leftmargin=1cm]
+    \item Centralized exception handling trong backend
+    \item Graceful error recovery trong frontend
+    \item Meaningful error messages cho người dùng
+    \item Retry logic cho network failures
+    \item Frontend-backend error code standardization
+\end{itemize}
+
+\subsection{Logging và monitoring}
+Hệ thống giám sát:
+
+\begin{itemize}[leftmargin=1cm]
+    \item Structured logging với log levels
+    \item Application metrics tracking (API calls, response time)
+    \item Crash reporting với stack traces
+    \item User behavior analytics
+    \item Alerting system cho critical failures
+\end{itemize}
+
+\section{Triển khai và phát triển}
+
+\subsection{Quy trình triển khai}
+Quy trình CI/CD:
+
+\begin{itemize}[leftmargin=1cm]
+    \item Automated testing trước mỗi deployment
+    \item Docker containerization cho backend services
+    \item Phiên bản preview cho testing người dùng
+    \item Rolling updates để giảm thiểu downtime
+\end{itemize}
+
+\subsection{Roadmap phát triển}
+Các giai đoạn phát triển:
+
+\begin{itemize}[leftmargin=1cm]
+    \item MVP với các tính năng cốt lõi
+    \item Beta testing với nhóm người dùng thử nghiệm
+    \item Cải tiến dựa trên feedback
+    \item Phát hành phiên bản hoàn chỉnh
+\end{itemize}
+
+\subsection{Kế hoạch mở rộng}
+Hướng mở rộng trong tương lai:
+
+\begin{itemize}[leftmargin=1cm]
+    \item Tích hợp với API thực tế của các hãng hàng không
+    \item Bổ sung tính năng đặt khách sạn và dịch vụ du lịch
+    \item Phát triển phiên bản iOS
+    \item Tích hợp AI cho gợi ý cá nhân hóa
+\end{itemize}

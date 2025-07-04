@@ -14,10 +14,6 @@ public class BookingDTO {
     @NotNull(message = "User ID is required")
     private Long userId;
 
-    @NotNull(message = "Total price is required")
-    @Min(value = 0, message = "Total price must be non-negative")
-    private Double totalPrice;
-
     @NotNull(message = "Passenger count is required")
     @Min(value = 1, message = "At least one passenger is required")
     private Integer passengerCount;

@@ -155,18 +155,16 @@ public class BookingServiceImpl implements BookingService {
             }
         }
 
-        // Tính toán và kiểm tra giá vé
         double calculatedPrice = 0;
         for (Flight flight : flights) {
             calculatedPrice += flight.getCurrentPrice() * bookingDTO.getPassengerCount();
         }
 
-        // Tạo booking mới
         Booking booking = new Booking();
         booking.setUser(user);
         booking.setBookingReference(generateBookingReference());
         booking.setBookingDate(LocalDateTime.now());
-        booking.setTotalPrice(calculatedPrice); // Dùng giá tính toán từ server
+        booking.setTotalPrice(calculatedPrice);
         booking.setStatus("PENDING");
         booking.setPassengerCount(bookingDTO.getPassengerCount());
         booking.setTripType(bookingDTO.getTripType());
@@ -176,18 +174,14 @@ public class BookingServiceImpl implements BookingService {
         booking.setFlights(flights);
         booking.setNote(bookingDTO.getNote() != null ? bookingDTO.getNote() : "");
 
-        // Lưu booking trước để có ID
         Booking savedBooking = bookingRepository.save(booking);
 
-        // Tạo và lưu passengers
         for (PassengerDTO passengerDTO : bookingDTO.getPassengers()) {
-            // Kiểm tra thông tin passenger
             if (passengerDTO.getFirstName() == null || passengerDTO.getLastName() == null ||
                     passengerDTO.getBirthDate() == null || passengerDTO.getGender() == null) {
                 throw new BadRequestException("Missing required passenger information");
             }
 
-            // Sử dụng service để tạo passenger
             passengerService.createPassenger(passengerDTO, savedBooking);
         }
 
@@ -197,10 +191,12 @@ public class BookingServiceImpl implements BookingService {
             seatFlight.setBooking(savedBooking);
             seatFlight.setDateHold(LocalDateTime.now());
             seatFlightRepository.save(seatFlight);
+
+            calculatedPrice += seatFlight.getFlight().getCurrentPrice();
         }
 
         savedBooking.setSeatFlights(seatFlights);
-
+        savedBooking.setTotalPrice(calculatedPrice);
         return bookingRepository.save(savedBooking);
     }
 

@@ -22,7 +22,7 @@ public class BookingResponse {
         private Long userId;
         private String userFullName;
         private String status;
-        private BigDecimal totalAmount;
+        private BigDecimal totalPrice;
         private List<Long> passengerIds;
         private List<Long> flightIds;
         private List<SeatFlightSimpleResponse> seatFlights;
@@ -46,7 +46,7 @@ public class BookingResponse {
                 }
 
                 this.status = booking.getStatus();
-                this.totalAmount = BigDecimal.valueOf(booking.getTotalPrice());
+                this.totalPrice = BigDecimal.valueOf(booking.getTotalPrice());
 
                 this.passengerIds = booking.getPassengers() != null
                                 ? booking.getPassengers().stream().map(passenger -> passenger.getId())

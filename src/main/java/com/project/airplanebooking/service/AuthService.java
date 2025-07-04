@@ -1,12 +1,9 @@
 package com.project.airplanebooking.service;
 
 import com.project.airplanebooking.dto.request.LoginRequest;
-import com.project.airplanebooking.dto.request.OtpVerificationRequest;
 import com.project.airplanebooking.dto.request.RegisterRequest;
-import com.project.airplanebooking.dto.response.JwtAuthenticationResponse;
 import com.project.airplanebooking.dto.response.RegisterResponse;
 import com.project.airplanebooking.dto.response.UserResponse;
-import com.project.airplanebooking.exception.BadRequestException;
 import com.project.airplanebooking.exception.ConflictException;
 import com.project.airplanebooking.exception.ResourceNotFoundException;
 import com.project.airplanebooking.exception.ValidationException;
@@ -18,7 +15,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -31,19 +27,14 @@ public class AuthService {
     private final JwtTokenProvider tokenProvider;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final EmailService emailService;
-    private final OtpService otpService;
 
     @Autowired
     public AuthService(AuthenticationManager authenticationManager, JwtTokenProvider tokenProvider,
-            UserRepository userRepository, PasswordEncoder passwordEncoder, EmailService emailService,
-            OtpService otpService) {
+            UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.authenticationManager = authenticationManager;
         this.tokenProvider = tokenProvider;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
-        this.emailService = emailService;
-        this.otpService = otpService;
     }
 
     public UserResponse login(LoginRequest loginRequest) {
@@ -106,45 +97,4 @@ public class AuthService {
         return new RegisterResponse(savedUser);
     }
 
-    public void sendLoginOtp(String email) {
-        // Kiểm tra email có tồn tại
-        userRepository.findByEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy tài khoản với email: " + email));
-
-        // Gửi OTP
-        otpService.sendOtp(email);
-    }
-
-    public JwtAuthenticationResponse verifyOtpAndLogin(OtpVerificationRequest request) {
-        // Xác thực OTP
-        boolean isValid = otpService.verifyOtp(request.getEmail(), request.getOtp());
-
-        if (!isValid) {
-            throw new BadRequestException("Xác thực OTP thất bại");
-        }
-
-        // Lấy thông tin user
-        User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Không tìm thấy tài khoản với email: " + request.getEmail()));
-
-        // Cập nhật thời gian đăng nhập
-        user.setLastLogin(LocalDateTime.now());
-        userRepository.save(user);
-
-        // Tạo token từ thông tin user (sử dụng null thay cho authorities)
-        Authentication authentication = new UsernamePasswordAuthenticationToken(
-                user.getUsername(), null, null);
-
-        String token = tokenProvider.generateToken(authentication);
-
-        // Tạo response với constructor của UserResponse
-        UserResponse userResponse = new UserResponse(user);
-        userResponse.setToken(token);
-
-        return JwtAuthenticationResponse.builder()
-                .token(token)
-                .user(userResponse)
-                .build();
-    }
 }

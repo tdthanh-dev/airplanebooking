@@ -40,8 +40,8 @@ public class SecurityConfig {
                         }))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // Authentication endpoints (supporting both path patterns)
-                        .requestMatchers("/auth/**", "/api/v1/auth/**").permitAll()
+                        // Authentication and password-reset endpoints (public)
+                        .requestMatchers("/auth/**", "/api/v1/auth/**", "/api/v1/password-reset/**").permitAll()
 
                         // Swagger documentation
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
