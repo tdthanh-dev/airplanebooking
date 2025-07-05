@@ -97,4 +97,18 @@ public class AuthService {
         return new RegisterResponse(savedUser);
     }
 
+    public String refreshToken(String refreshToken) {
+        if (!tokenProvider.validateToken(refreshToken) || !tokenProvider.isRefreshToken(refreshToken)) {
+            throw new ValidationException("Invalid or expired refresh token");
+        }
+
+        String username = tokenProvider.getUsernameFromJWT(refreshToken);
+        // ensure user still exists / active
+        if (userRepository.findByUsername(username).isEmpty()) {
+            throw new ResourceNotFoundException("User", "username", username);
+        }
+
+        return tokenProvider.generateTokenFromUsername(username);
+    }
+
 }

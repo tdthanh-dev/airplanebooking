@@ -12,6 +12,7 @@ import com.project.airplanebooking.dto.request.LoginRequest;
 import com.project.airplanebooking.dto.request.OtpRequest;
 import com.project.airplanebooking.dto.request.OtpVerificationRequest;
 import com.project.airplanebooking.dto.request.RegisterRequest;
+import com.project.airplanebooking.dto.request.TokenRefreshRequest;
 import com.project.airplanebooking.dto.response.JwtAuthenticationResponse;
 import com.project.airplanebooking.dto.response.RegisterResponse;
 import com.project.airplanebooking.dto.response.UserResponse;
@@ -40,6 +41,12 @@ public class AuthController {
     public ResponseEntity<RegisterResponse> register(@Valid @RequestBody RegisterRequest registerRequest) {
         RegisterResponse response = authService.register(registerRequest);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<String> refreshToken(@Valid @RequestBody TokenRefreshRequest request) {
+        String newToken = authService.refreshToken(request.getRefreshToken());
+        return ResponseEntity.ok(newToken);
     }
 
 }
